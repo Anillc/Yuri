@@ -7,6 +7,7 @@
     packages.default = pkgs.stdenv.mkDerivation {
       name = "remu";
       src = ./.;
+      makeFlags = [ "PREFIX=$(out)" ];
     };
   });
 }
