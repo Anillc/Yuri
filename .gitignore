@@ -1,4 +1,7 @@
 /.direnv
-/build
 /result
-/test
+
+
+# Added by cargo
+
+/target
