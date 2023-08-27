@@ -124,5 +124,68 @@ pub(crate) fn r_instructions() -> Vec<Instructor> {
         _ => unreachable!(),
       },
     },
+
+    Instructor {
+      name: "ADDW",
+      opcode: 0b0111011,
+      funct: Funct::R(0b000, 0b0000000),
+      run: |inst, cpu| match inst {
+        Instruction::R { funct7: _, rs2, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(cpu.regs[rs2]) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "SUBW",
+      opcode: 0b0111011,
+      funct: Funct::R(0b000, 0b0100000),
+      run: |inst, cpu| match inst {
+        Instruction::R { funct7: _, rs2, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1].wrapping_sub(cpu.regs[rs2]) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "SLLW",
+      opcode: 0b0111011,
+      funct: Funct::R(0b001, 0b0000000),
+      run: |inst, cpu| match inst {
+        Instruction::R { funct7: _, rs2, rs1, funct3: _, rd, opcode: _ } => {
+          let shamt = cpu.regs[rs2] & 0b111111;
+          cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "SRLW",
+      opcode: 0b0111011,
+      funct: Funct::R(0b100, 0b0000000),
+      run: |inst, cpu| match inst {
+        Instruction::R { funct7: _, rs2, rs1, funct3: _, rd, opcode: _ } => {
+          let shamt = cpu.regs[rs2] & 0b111111;
+          cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "SRAW",
+      opcode: 0b0111011,
+      funct: Funct::R(0b100, 0b0100000),
+      run: |inst, cpu| match inst {
+        Instruction::R { funct7: _, rs2, rs1, funct3: _, rd, opcode: _ } => {
+          let shamt = cpu.regs[rs2] & 0b111111;
+          cpu.regs.set(rd, ((cpu.regs[rs1] as i64) >> shamt) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      },
+    },
   ])
 }

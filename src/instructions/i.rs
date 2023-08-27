@@ -228,5 +228,93 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         _ => unreachable!(),
       }
     },
+
+    Instructor {
+      name: "LWU",
+      opcode: 0b0000011,
+      funct: Funct::I(0b110),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let data = cpu.mem.read32(address) as u64;
+          cpu.regs.set(rd, data);
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "LD",
+      opcode: 0b0000011,
+      funct: Funct::I(0b011),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let data = cpu.mem.read64(address);
+          cpu.regs.set(rd, data);
+        },
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "ADDIW",
+      opcode: 0b0010011,
+      funct: Funct::I(0b000),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SLLIW",
+      opcode: 0b0011011,
+      funct: Funct::I(0b001),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          // TODO: support rv32i ?
+          let shamt = imm & 0b111111;
+          cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SRLIW",
+      opcode: 0b0011011,
+      funct: Funct::I(0b001),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          // TODO: support rv32i ?
+          let shamt = imm & 0b111111;
+          cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SRLIW/SRAIW",
+      opcode: 0b0011011,
+      funct: Funct::I(0b101),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let shamt = imm & 0b111111;
+          match imm >> 6 {
+            // SRLI
+            0b000000 => cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64),
+            // SRAI
+            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64),
+            // TODO: handle unknown instruction
+            _ => panic!("unknown instruction"),
+          }
+        },
+        _ => unreachable!(),
+      }
+    },
   ])
 }
