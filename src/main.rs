@@ -1,6 +1,7 @@
 use crate::instructions::parse;
 
 mod cpu;
+mod register;
 mod instructions;
 
 fn main() {

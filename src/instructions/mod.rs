@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
+use crate::cpu::Cpu;
+
 use self::r::r_instructions;
 use self::i::i_instructions;
 use self::s::s_instructions;
@@ -62,7 +64,7 @@ pub(crate) struct Instructor {
   funct: Funct,
   #[allow(dead_code)]
   name: &'static str,
-  run: fn(inst: Instruction),
+  run: fn(inst: Instruction, cpu: &Cpu),
 }
 
 #[derive(Debug, Clone, Copy)]

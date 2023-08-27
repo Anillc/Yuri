@@ -1,8 +1,8 @@
-
+use crate::register::Registers;
 
 pub struct Cpu<'a> {
   mem: &'a [u8],
-  regs: [u64; 32],
+  regs: Registers,
   pc: u64,
 }
 
