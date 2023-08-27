@@ -2,7 +2,7 @@ use super::{Instructor, Funct, Instruction};
 
 pub(crate) fn j_instructions() -> Vec<Instructor> {
   Vec::from([
-    Instructor{
+    Instructor {
       name: "JAL",
       opcode: 0b1101111,
       funct: Funct::J,

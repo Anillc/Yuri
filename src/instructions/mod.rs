@@ -69,7 +69,7 @@ pub(crate) struct Instructor {
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Instruction {
-  R{
+  R {
     funct7: u8,
     rs2: usize,
     rs1: usize,
@@ -77,33 +77,33 @@ pub(crate) enum Instruction {
     rd: usize,
     opcode: u8,
   },
-  I{
+  I {
     imm: u16,
     rs1: usize,
     funct3: u8,
     rd: usize,
     opcode: u8,
   },
-  S{
+  S {
     imm: u16,
     rs2: usize,
     rs1: usize,
     funct3: u8,
     opcode: u8,
   },
-  B{
+  B {
     imm: u16,
     rs2: usize,
     rs1: usize,
     funct3: u8,
     opcode: u8,
   },
-  U{
+  U {
     imm: u32,
     rd: usize,
     opcode: u8,
   },
-  J{
+  J {
     imm: u32,
     rd: usize,
     opcode: u8,
@@ -116,7 +116,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
   let instructor = instructors.get(&(inst & mask)).unwrap();
   let instruction = match instructor.funct {
     Funct::R(funct3, funct7) => {
-      Instruction::R{
+      Instruction::R {
         funct7,
         rs2: ((inst >> 20) & 0b11111) as usize,
         rs1: ((inst >> 15) & 0b11111) as usize,
@@ -126,7 +126,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
       }
     },
     Funct::I(funct3) => {
-      Instruction::I{
+      Instruction::I {
         imm: ((inst >> 20) & 0b111111111111) as u16,
         rs1: ((inst >> 15) & 0b11111) as usize,
         funct3,
@@ -135,7 +135,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
       }
     },
     Funct::S(funct3) => {
-      Instruction::S{
+      Instruction::S {
         imm: (((inst >> 25) & 0b11111) << 5) as u16 | ((inst >> 7) & 0b11111) as u16,
         rs2: ((inst >> 20) & 0b11111) as usize,
         rs1: ((inst >> 15) & 0b11111) as usize,
@@ -144,7 +144,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
       }
     },
     Funct::B(funct3) => {
-      Instruction::B{
+      Instruction::B {
         imm: (((inst >> 31) & 0b1) << 12) as u16 | (((inst >> 7) & 0b1) << 11) as u16 | (((inst >> 25) & 0b111111) << 5) as u16 | (((inst >> 8) & 0b1111) << 1) as u16,
         rs2: ((inst >> 20) & 0b11111) as usize,
         rs1: ((inst >> 15) & 0b11111) as usize,
@@ -153,7 +153,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
       }
     },
     Funct::U => {
-      Instruction::U{
+      Instruction::U {
         imm: (inst >> 12) & 0b11111111111111111111,
         rd: ((inst >> 7) & 0b11111) as usize,
         opcode: (inst & 0b1111111) as u8,
