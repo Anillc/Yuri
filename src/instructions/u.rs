@@ -4,7 +4,7 @@ use super::Instructor;
 
 pub(crate) fn u_instructions() -> Vec<Instructor> {
   Vec::from([
-    Instructor {
+    Instructor{
       name: "LUI",
       opcode: 0b0110111,
       funct: Funct::U,
@@ -16,7 +16,7 @@ pub(crate) fn u_instructions() -> Vec<Instructor> {
       },
     },
 
-    Instructor {
+    Instructor{
       name: "AUIPC",
       opcode: 0b0010111,
       funct: Funct::U,
