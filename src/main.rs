@@ -1,11 +1,12 @@
-use crate::instructions::parse;
+use crate::{instructions::parse, cpu::Cpu};
 
 mod cpu;
 mod register;
 mod instructions;
 
 fn main() {
-    let (instructor, instruction) = parse(0x003100b3);
-    dbg!(instructor, instruction);
-    println!("Hello, world!");
+    let mut mem: [u8; 1024] = [0; 1024];
+    let mut cpu = Cpu::new(&mut mem);
+    let (instructor, instruction) = parse(0x1bf520b7);
+    (instructor.run)(instruction, &mut cpu);
 }
