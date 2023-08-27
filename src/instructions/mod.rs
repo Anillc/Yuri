@@ -69,6 +69,7 @@ pub(crate) struct Instructor {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub(crate) enum Instruction {
   R {
     funct7: u8,
