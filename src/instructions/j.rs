@@ -1,3 +1,5 @@
+use crate::utils::extend_sign;
+
 use super::{Instructor, Funct, Instruction};
 
 pub(crate) fn j_instructions() -> Vec<Instructor> {
@@ -8,8 +10,9 @@ pub(crate) fn j_instructions() -> Vec<Instructor> {
       funct: Funct::J,
       run: |inst, cpu| match inst {
         Instruction::J { imm, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.pc.wrapping_add(4));
-          cpu.pc = cpu.pc.wrapping_add(imm as i32 as i64 as u64);
+          let res = cpu.pc.wrapping_add(4);
+          cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          cpu.regs.set(rd, res);
         },
         _ => unreachable!(),
       }

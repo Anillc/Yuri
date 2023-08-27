@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
 use crate::cpu::Cpu;
+use crate::utils::extend_sign;
 
 use self::r::r_instructions;
 use self::i::i_instructions;
@@ -78,33 +79,33 @@ pub(crate) enum Instruction {
     opcode: u8,
   },
   I {
-    imm: u16,
+    imm: i64,
     rs1: usize,
     funct3: u8,
     rd: usize,
     opcode: u8,
   },
   S {
-    imm: u16,
+    imm: i64,
     rs2: usize,
     rs1: usize,
     funct3: u8,
     opcode: u8,
   },
   B {
-    imm: u16,
+    imm: i64,
     rs2: usize,
     rs1: usize,
     funct3: u8,
     opcode: u8,
   },
   U {
-    imm: u32,
+    imm: i64,
     rd: usize,
     opcode: u8,
   },
   J {
-    imm: u32,
+    imm: i64,
     rd: usize,
     opcode: u8,
   },
@@ -127,7 +128,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
     },
     Funct::I(funct3) => {
       Instruction::I {
-        imm: ((inst >> 20) & 0b111111111111) as u16,
+        imm: extend_sign(((inst >> 20) & 0b111111111111) as u64, 12),
         rs1: ((inst >> 15) & 0b11111) as usize,
         funct3,
         rd: ((inst >> 7) & 0b11111) as usize,
@@ -136,7 +137,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
     },
     Funct::S(funct3) => {
       Instruction::S {
-        imm: (((inst >> 25) & 0b11111) << 5) as u16 | ((inst >> 7) & 0b11111) as u16,
+        imm: extend_sign((((inst >> 25) & 0b11111) << 5) as u64 | ((inst >> 7) & 0b11111) as u64, 12),
         rs2: ((inst >> 20) & 0b11111) as usize,
         rs1: ((inst >> 15) & 0b11111) as usize,
         funct3,
@@ -145,7 +146,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
     },
     Funct::B(funct3) => {
       Instruction::B {
-        imm: (((inst >> 31) & 0b1) << 12) as u16 | (((inst >> 7) & 0b1) << 11) as u16 | (((inst >> 25) & 0b111111) << 5) as u16 | (((inst >> 8) & 0b1111) << 1) as u16,
+        imm: extend_sign((((inst >> 31) & 0b1) << 12) as u64 | (((inst >> 7) & 0b1) << 11) as u64 | (((inst >> 25) & 0b111111) << 5) as u64 | (((inst >> 8) & 0b1111) << 1) as u64, 13),
         rs2: ((inst >> 20) & 0b11111) as usize,
         rs1: ((inst >> 15) & 0b11111) as usize,
         funct3,
@@ -154,14 +155,14 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
     },
     Funct::U => {
       Instruction::U {
-        imm: (inst >> 12) & 0b11111111111111111111,
+        imm: extend_sign(((inst >> 12) & 0b11111111111111111111) as u64, 20),
         rd: ((inst >> 7) & 0b11111) as usize,
         opcode: (inst & 0b1111111) as u8,
       }
     },
     Funct::J => {
-      Instruction::J{
-        imm: (((inst >> 31) & 0b1) << 20) | (((inst >> 12) & 0b11111111) << 12) | (((inst >> 20) & 0b1) << 11) | (((inst >> 21) & 0b1111111111) << 1),
+      Instruction::J {
+        imm: extend_sign(((((inst >> 31) & 0b1) << 20) | (((inst >> 12) & 0b11111111) << 12) | (((inst >> 20) & 0b1) << 11) | (((inst >> 21) & 0b1111111111) << 1)) as u64, 21),
         rd: ((inst >> 7) & 0b11111) as usize,
         opcode: (inst & 0b1111111) as u8,
       }

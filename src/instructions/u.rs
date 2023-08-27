@@ -1,4 +1,4 @@
-use crate::{instructions::{Funct, Instruction}, cpu::Cpu};
+use crate::instructions::{Funct, Instruction};
 
 use super::Instructor;
 

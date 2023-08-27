@@ -3,6 +3,7 @@ use crate::{instructions::parse, cpu::Cpu};
 mod cpu;
 mod register;
 mod instructions;
+mod utils;
 
 fn main() {
     let mut mem: [u8; 1024] = [0; 1024];
