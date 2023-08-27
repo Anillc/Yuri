@@ -81,7 +81,8 @@ pub(crate) enum Instruction {
   },
   I {
     imm: i64,
-    rs1: usize,
+    // rs1 might be uimm
+    rs1: u8,
     funct3: u8,
     rd: usize,
     opcode: u8,
@@ -130,7 +131,7 @@ pub(crate) fn parse(inst: u32) -> (&'static Instructor, Instruction) {
     Funct::I(funct3) => {
       Instruction::I {
         imm: extend_sign(((inst >> 20) & 0b111111111111) as u64, 12),
-        rs1: ((inst >> 15) & 0b11111) as usize,
+        rs1: ((inst >> 15) & 0b11111) as u8,
         funct3,
         rd: ((inst >> 7) & 0b11111) as usize,
         opcode: (inst & 0b1111111) as u8,

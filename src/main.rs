@@ -4,6 +4,7 @@ mod cpu;
 mod register;
 mod memory;
 mod instructions;
+mod csr;
 mod utils;
 
 fn main() {

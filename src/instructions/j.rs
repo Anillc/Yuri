@@ -13,7 +13,7 @@ pub(crate) fn j_instructions() -> Vec<Instructor> {
           cpu.regs.set(rd, res);
         },
         _ => unreachable!(),
-      }
+      },
     }
   ])
 }

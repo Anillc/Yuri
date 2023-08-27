@@ -9,7 +9,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
           let res = cpu.pc.wrapping_add(4);
-          cpu.pc = cpu.regs[rs1].wrapping_add(imm as u64);
+          cpu.pc = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           cpu.regs.set(rd, res);
         },
         _ => unreachable!(),
@@ -22,7 +22,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b000),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read8(address) as i8 as i64 as u64;
           cpu.regs.set(rd, data);
         },
@@ -36,7 +36,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b001),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read16(address) as i16 as i64 as u64;
           cpu.regs.set(rd, data);
         },
@@ -50,7 +50,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b100),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read32(address) as i32 as i64 as u64;
           cpu.regs.set(rd, data);
         },
@@ -64,7 +64,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b000),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read8(address) as u64;
           cpu.regs.set(rd, data);
         },
@@ -78,7 +78,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b101),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read16(address) as u64;
           cpu.regs.set(rd, data);
         },
@@ -92,10 +92,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b000),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64));
+          cpu.regs.set(rd, cpu.regs[rs1 as usize].wrapping_add(imm as u64));
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -104,10 +104,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b010),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, if (cpu.regs[rs1] as i64) < imm { 1 } else { 0 });
+          cpu.regs.set(rd, if (cpu.regs[rs1 as usize] as i64) < imm { 1 } else { 0 });
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -116,10 +116,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b011),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, if cpu.regs[rs1] < imm as u64 { 1 } else { 0 });
+          cpu.regs.set(rd, if cpu.regs[rs1 as usize] < imm as u64 { 1 } else { 0 });
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -128,10 +128,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b100),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.regs[rs1] ^ (imm as u64));
+          cpu.regs.set(rd, cpu.regs[rs1 as usize] ^ (imm as u64));
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -140,10 +140,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b110),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.regs[rs1] | (imm as u64));
+          cpu.regs.set(rd, cpu.regs[rs1 as usize] | (imm as u64));
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -152,10 +152,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b111),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.regs[rs1] & (imm as u64));
+          cpu.regs.set(rd, cpu.regs[rs1 as usize] & (imm as u64));
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -166,10 +166,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
           // TODO: support rv32i ?
           let shamt = imm & 0b111111;
-          cpu.regs.set(rd, cpu.regs[rs1] << shamt);
+          cpu.regs.set(rd, cpu.regs[rs1 as usize] << shamt);
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -181,15 +181,15 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
           let shamt = imm & 0b111111;
           match imm >> 6 {
             // SRLI
-            0b000000 => cpu.regs.set(rd, cpu.regs[rs1] >> shamt),
+            0b000000 => cpu.regs.set(rd, cpu.regs[rs1 as usize] >> shamt),
             // SRAI
-            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as u64),
+            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] as i64 >> shamt) as u64),
             // TODO: handle unknown instruction
             _ => panic!("unknown instruction"),
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -201,7 +201,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
           // do nothing
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -226,7 +226,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -235,12 +235,12 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b110),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read32(address) as u64;
           cpu.regs.set(rd, data);
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -249,7 +249,7 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b011),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
           let data = cpu.mem.read64(address);
           cpu.regs.set(rd, data);
         },
@@ -263,10 +263,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
       funct: Funct::I(0b000),
       run: |inst, cpu| match inst {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
-          cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64) as i32 as i64 as u64);
+          cpu.regs.set(rd, cpu.regs[rs1 as usize].wrapping_add(imm as u64) as i32 as i64 as u64);
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -277,10 +277,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
           // TODO: support rv32i ?
           let shamt = imm & 0b111111;
-          cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+          cpu.regs.set(rd, (cpu.regs[rs1 as usize] << shamt) as i32 as i64 as u64);
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -291,10 +291,10 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
           // TODO: support rv32i ?
           let shamt = imm & 0b111111;
-          cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+          cpu.regs.set(rd, (cpu.regs[rs1 as usize] >> shamt) as i32 as i64 as u64);
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -306,15 +306,15 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
           let shamt = imm & 0b111111;
           match imm >> 6 {
             // SRLI
-            0b000000 => cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64),
+            0b000000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] >> shamt) as i32 as i64 as u64),
             // SRAI
-            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64),
+            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] as i64 >> shamt) as i32 as i64 as u64),
             // TODO: handle unknown instruction
             _ => panic!("unknown instruction"),
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -326,7 +326,90 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
           // do nothing
         },
         _ => unreachable!(),
-      }
+      },
+    },
+
+    Instructor {
+      name: "CSRRW",
+      opcode: 0b1110011,
+      funct: Funct::I(0b001),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let res = cpu.csr.read(imm as u16);
+          cpu.csr.write(imm as u16, cpu.regs[rs1 as usize]);
+          cpu.regs.set(rd, res);
+        }
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "CSRRS",
+      opcode: 0b1110011,
+      funct: Funct::I(0b010),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let res = cpu.csr.read(imm as u16);
+          cpu.csr.write(imm as u16, res | cpu.regs[rs1 as usize]);
+          cpu.regs.set(rd, res);
+        }
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "CSRRC",
+      opcode: 0b1110011,
+      funct: Funct::I(0b011),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let res = cpu.csr.read(imm as u16);
+          cpu.csr.write(imm as u16, res & !cpu.regs[rs1 as usize]);
+          cpu.regs.set(rd, res);
+        }
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "CSRRWI",
+      opcode: 0b1110011,
+      funct: Funct::I(0b101),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.csr.read(imm as u16));
+          cpu.csr.write(imm as u16, rs1 as u64);
+        }
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "CSRRSI",
+      opcode: 0b1110011,
+      funct: Funct::I(0b110),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let res = cpu.csr.read(imm as u16);
+          cpu.csr.write(imm as u16, res | (rs1 as u64));
+          cpu.regs.set(rd, res);
+        }
+        _ => unreachable!(),
+      },
+    },
+
+    Instructor {
+      name: "CSRRCI",
+      opcode: 0b1110011,
+      funct: Funct::I(0b111),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let res = cpu.csr.read(imm as u16);
+          cpu.csr.write(imm as u16, res & !(rs1 as u64));
+          cpu.regs.set(rd, res);
+        }
+        _ => unreachable!(),
+      },
     },
   ])
 }

@@ -13,7 +13,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -27,7 +27,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -41,7 +41,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -55,7 +55,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -69,7 +69,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
 
     Instructor {
@@ -83,7 +83,7 @@ pub(crate) fn b_instructions() -> Vec<Instructor> {
           }
         },
         _ => unreachable!(),
-      }
+      },
     },
   ])
 }
