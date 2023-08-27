@@ -2,6 +2,7 @@ use crate::{instructions::parse, cpu::Cpu};
 
 mod cpu;
 mod register;
+mod memory;
 mod instructions;
 mod utils;
 

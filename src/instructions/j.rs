@@ -1,5 +1,3 @@
-use crate::utils::extend_sign;
-
 use super::{Instructor, Funct, Instruction};
 
 pub(crate) fn j_instructions() -> Vec<Instructor> {
