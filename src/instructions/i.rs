@@ -85,5 +85,111 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         _ => unreachable!(),
       },
     },
+
+    Instructor {
+      name: "ADDI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b000),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64));
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SLTI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b010),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, if (cpu.regs[rs1] as i64) < imm { 1 } else { 0 });
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SLTIU",
+      opcode: 0b0010011,
+      funct: Funct::I(0b011),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, if cpu.regs[rs1] < imm as u64 { 1 } else { 0 });
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "XORI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b100),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1] ^ (imm as u64));
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "ORI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b110),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1] | (imm as u64));
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "ANDI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b111),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          cpu.regs.set(rd, cpu.regs[rs1] & (imm as u64));
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SLLI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b001),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          // TODO: support rv32i ?
+          let shamt = imm & 0b111111;
+          cpu.regs.set(rd, cpu.regs[rs1] << shamt);
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "SRLI/SRAI",
+      opcode: 0b0010011,
+      funct: Funct::I(0b101),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          let shamt = imm & 0b111111;
+          match imm >> 6 {
+            // SRLI
+            0b000000 => cpu.regs.set(rd, cpu.regs[rs1] >> shamt),
+            // SRAI
+            0b010000 => cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as u64),
+            // TODO: handle unknown instruction
+            _ => panic!("unknown instruction"),
+          }
+        },
+        _ => unreachable!(),
+      }
+    },
   ])
 }
