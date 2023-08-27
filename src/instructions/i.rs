@@ -191,5 +191,42 @@ pub(crate) fn i_instructions() -> Vec<Instructor> {
         _ => unreachable!(),
       }
     },
+
+    Instructor {
+      name: "FENCE",
+      opcode: 0b0001111,
+      funct: Funct::I(0b000),
+      run: |inst, _cpu| match inst {
+        Instruction::I { imm: _, rs1: _, funct3: _, rd: _, opcode: _ } => {
+          // do nothing
+        },
+        _ => unreachable!(),
+      }
+    },
+
+    Instructor {
+      name: "ECALL/EBREAK",
+      opcode: 0b1110011,
+      funct: Funct::I(0b000),
+      run: |inst, cpu| match inst {
+        Instruction::I { imm, rs1, funct3: _, rd, opcode: _ } => {
+          if rs1 != 0 || rd != 0 {
+            // TODO
+            panic!()
+          }
+          match imm {
+            0b000000000000 => {
+              // TODO: ECALL
+            },
+            0b000000000001 => {
+              // TODO: EBREAK
+            },
+            // TODO
+            _ => panic!(),
+          }
+        },
+        _ => unreachable!(),
+      }
+    },
   ])
 }
