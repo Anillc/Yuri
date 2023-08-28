@@ -1,12 +1,15 @@
+use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64}};
+
 
 
 pub(crate) struct Memory<'a> {
   mem: &'a mut [u8],
+  reservation: Mutex<Vec<u64>>,
 }
 
 impl<'a> Memory<'a> {
   pub(crate) fn new(mem: &'a mut [u8]) -> Memory<'a> {
-    Memory { mem }
+    Memory { mem, reservation: Mutex::new(Vec::new()) }
   }
 
   pub(crate) fn read8(&self, address: u64) -> u8 {
@@ -71,5 +74,50 @@ impl<'a> Memory<'a> {
     self.mem[address + 5] = bytes[5];
     self.mem[address + 6] = bytes[6];
     self.mem[address + 7] = bytes[7];
+  }
+
+  pub(crate) fn lock_addr(&mut self, address: u64) {
+    self.reservation.lock().unwrap().push(address);
+  }
+
+  // true -> exist
+  // false -> non-exist
+  pub(crate) fn unlock_addr(&mut self, address: u64) -> bool {
+    let mut reservation = self.reservation.lock().unwrap();
+    let res = reservation.contains(&address);
+    reservation.clear();
+    res
+  }
+
+  pub(crate) fn ptr32(&mut self, address: u64) -> *mut u32 {
+    &mut self.mem[address as usize] as *mut _ as *mut u32
+  }
+
+  pub(crate) fn ptr64(&mut self, address: u64) -> *mut u64 {
+    &mut self.mem[address as usize] as *mut _ as *mut u64
+  }
+
+  pub(crate) fn ptr32i(&mut self, address: u64) -> *mut i32 {
+    &mut self.mem[address as usize] as *mut _ as *mut i32
+  }
+
+  pub(crate) fn ptr64i(&mut self, address: u64) -> *mut i64 {
+    &mut self.mem[address as usize] as *mut _ as *mut i64
+  }
+
+  pub(crate) fn atomic32(&mut self, address: u64) -> &AtomicU32 {
+    unsafe { AtomicU32::from_ptr(self.ptr32(address)) }
+  }
+
+  pub(crate) fn atomic64(&mut self, address: u64) -> &AtomicU64 {
+    unsafe { AtomicU64::from_ptr(self.ptr64(address)) }
+  }
+
+  pub(crate) fn atomic32i(&mut self, address: u64) -> &AtomicI32 {
+    unsafe { AtomicI32::from_ptr(self.ptr32i(address)) }
+  }
+
+  pub(crate) fn atomic64i(&mut self, address: u64) -> &AtomicI64 {
+    unsafe { AtomicI64::from_ptr(self.ptr64i(address)) }
   }
 }

@@ -1,3 +1,4 @@
+#![feature(atomic_from_ptr)]
 use crate::{instructions::parse, cpu::Cpu};
 
 mod cpu;

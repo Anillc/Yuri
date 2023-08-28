@@ -36,6 +36,15 @@ pub(crate) struct J {
   pub(crate) rd: usize,
 }
 
+// R-type for A extension
+pub(crate) struct RA {
+  pub(crate) aq: bool,
+  pub(crate) rl: bool,
+  pub(crate) rs2: usize,
+  pub(crate) rs1: usize,
+  pub(crate) rd: usize,
+}
+
 pub(crate) trait InstructionParser {
   fn r(&self) -> R;
   fn i(&self) -> I;
@@ -43,6 +52,7 @@ pub(crate) trait InstructionParser {
   fn b(&self) -> B;
   fn u(&self) -> U;
   fn j(&self) -> J;
+  fn ra(&self) -> RA;
 }
 
 impl InstructionParser for u32 {
@@ -91,6 +101,16 @@ impl InstructionParser for u32 {
       rd: ((self >> 7) & 0b11111) as usize,
     }
   }
+
+  fn ra(&self) -> RA {
+    RA {
+      aq: (self >> 26) & 0b1 == 1,
+      rl: (self >> 25) & 0b1 == 1,
+      rs2: ((self >> 20) & 0b11111) as usize,
+      rs1: ((self >> 15) & 0b11111) as usize,
+      rd: ((self >> 7) & 0b11111) as usize,
+    }
+  }
 }
 
 pub(crate) fn funct3(funct3: u8) -> Vec<InstructionSegment> {
@@ -103,5 +123,20 @@ pub(crate) fn funct37(funct3: u8, funct7: u8) -> Vec<InstructionSegment> {
   vec![
     InstructionSegment { start: 12, end: 14, comp: funct3 as u32 },
     InstructionSegment { start: 25, end: 31, comp: funct7 as u32 },
+  ]
+}
+
+pub(crate) fn funct_ra(funct3: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 12, end: 14, comp: funct3 as u32 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32 },
+  ]
+}
+
+pub(crate) fn funct_ra_rs2(funct3: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 12, end: 14, comp: funct3 as u32 },
+    InstructionSegment { start: 20, end: 24, comp: 0b000 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32 },
   ]
 }
