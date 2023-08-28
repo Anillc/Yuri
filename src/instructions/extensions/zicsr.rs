@@ -9,7 +9,7 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let res = cpu.csr.read(imm as u16);
-        cpu.csr.write(imm as u16, cpu.regs[rs1 as usize]);
+        cpu.csr.write(imm as u16, cpu.regs[rs1]);
         cpu.regs.set(rd, res);
       },
     },
@@ -21,7 +21,7 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let res = cpu.csr.read(imm as u16);
-        cpu.csr.write(imm as u16, res | cpu.regs[rs1 as usize]);
+        cpu.csr.write(imm as u16, res | cpu.regs[rs1]);
         cpu.regs.set(rd, res);
       },
     },
@@ -33,7 +33,7 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let res = cpu.csr.read(imm as u16);
-        cpu.csr.write(imm as u16, res & !cpu.regs[rs1 as usize]);
+        cpu.csr.write(imm as u16, res & !cpu.regs[rs1]);
         cpu.regs.set(rd, res);
       },
     },
@@ -43,9 +43,11 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b101),
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.csr.read(imm as u16));
-        cpu.csr.write(imm as u16, rs1 as u64);
+        let imm = (inst >> 20) as u16;
+        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, cpu.csr.read(imm));
+        cpu.csr.write(imm, rs1);
       },
     },
 
@@ -54,9 +56,11 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b110),
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        let res = cpu.csr.read(imm as u16);
-        cpu.csr.write(imm as u16, res | (rs1 as u64));
+        let imm = (inst >> 20) as u16;
+        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        let res = cpu.csr.read(imm);
+        cpu.csr.write(imm, res | rs1);
         cpu.regs.set(rd, res);
       },
     },
@@ -66,9 +70,11 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b111),
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        let res = cpu.csr.read(imm as u16);
-        cpu.csr.write(imm as u16, res & !(rs1 as u64));
+        let imm = (inst >> 20) as u16;
+        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        let res = cpu.csr.read(imm);
+        cpu.csr.write(imm as u16, res & !rs1);
         cpu.regs.set(rd, res);
       },
     },

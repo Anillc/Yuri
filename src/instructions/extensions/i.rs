@@ -1,4 +1,4 @@
-use crate::instructions::{Instructor, types::{U, InstructionParser, funct3, funct37, J, I, B, R, S}};
+use crate::instructions::{Instructor, types::{U, InstructionParser, funct3, funct37, J, I, B, R, S}, InstructionSegment};
 
 pub(crate) fn i() -> Vec<Instructor> {
   Vec::from([
@@ -41,7 +41,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let res = cpu.pc.wrapping_add(4);
-        cpu.pc = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        cpu.pc = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.regs.set(rd, res);
       },
     },
@@ -124,7 +124,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read8(address) as i8 as i64 as u64;
         cpu.regs.set(rd, data);
       },
@@ -136,7 +136,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b001),
       run: |inst, cpu| {
           let I { imm, rs1, rd } = inst.i();
-          let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+          let address = cpu.regs[rs1].wrapping_add(imm as u64);
           let data = cpu.mem.read16(address) as i16 as i64 as u64;
           cpu.regs.set(rd, data);
       },
@@ -148,7 +148,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b100),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read32(address) as i32 as i64 as u64;
         cpu.regs.set(rd, data);
       },
@@ -160,7 +160,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read8(address) as u64;
         cpu.regs.set(rd, data);
       },
@@ -172,7 +172,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b101),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read16(address) as u64;
         cpu.regs.set(rd, data);
       },
@@ -217,7 +217,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1 as usize].wrapping_add(imm as u64));
+        cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64));
       },
     },
 
@@ -227,7 +227,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b010),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, if (cpu.regs[rs1 as usize] as i64) < imm { 1 } else { 0 });
+        cpu.regs.set(rd, if (cpu.regs[rs1] as i64) < imm { 1 } else { 0 });
       },
     },
 
@@ -237,7 +237,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b011),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, if cpu.regs[rs1 as usize] < imm as u64 { 1 } else { 0 });
+        cpu.regs.set(rd, if cpu.regs[rs1] < imm as u64 { 1 } else { 0 });
       },
     },
 
@@ -247,7 +247,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b100),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1 as usize] ^ (imm as u64));
+        cpu.regs.set(rd, cpu.regs[rs1] ^ (imm as u64));
       },
     },
 
@@ -257,7 +257,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b110),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1 as usize] | (imm as u64));
+        cpu.regs.set(rd, cpu.regs[rs1] | (imm as u64));
       },
     },
 
@@ -267,7 +267,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b111),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1 as usize] & (imm as u64));
+        cpu.regs.set(rd, cpu.regs[rs1] & (imm as u64));
       },
     },
 
@@ -383,27 +383,25 @@ pub(crate) fn i() -> Vec<Instructor> {
       },
     },
 
-    // TODO
     Instructor {
-      name: "ECALL/EBREAK",
+      name: "ECALL",
       opcode: 0b1110011,
-      segments: funct3(0b000),
-      run: |inst, _cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        if rs1 != 0 || rd != 0 {
-          // TODO
-          panic!()
-        }
-        match imm {
-          0b000000000000 => {
-            // TODO: ECALL
-          },
-          0b000000000001 => {
-            // TODO: EBREAK
-          },
-          // TODO
-          _ => panic!(),
-        }
+      segments: vec![
+        InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 }
+      ],
+      run: |_inst, _cpu| {
+        // TODO
+      },
+    },
+
+    Instructor {
+      name: "EBREAK",
+      opcode: 0b1110011,
+      segments: vec![
+        InstructionSegment { start: 7, end: 31, comp: 0b0000000000010000000000000 }
+      ],
+      run: |_inst, _cpu| {
+        // TODO
       },
     },
 
@@ -413,7 +411,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b110),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read32(address) as u64;
         cpu.regs.set(rd, data);
       },
@@ -425,7 +423,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b011),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        let address = cpu.regs[rs1 as usize].wrapping_add(imm as u64);
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read64(address);
         cpu.regs.set(rd, data);
       },
@@ -445,31 +443,45 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "SLLI",
       opcode: 0b0010011,
-      segments: funct3(0b001),
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b001 },
+        InstructionSegment { start: 26, end: 31, comp: 0b000000 },
+      ],
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        // TODO: support rv32i ?
-        let shamt = imm & 0b111111;
-        cpu.regs.set(rd, cpu.regs[rs1 as usize] << shamt);
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, cpu.regs[rs1] << shamt);
       },
     },
 
-    // TODO
     Instructor {
-      name: "SRLI/SRAI",
+      name: "SRLI",
       opcode: 0b0010011,
-      segments: funct3(0b101),
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b101 },
+        InstructionSegment { start: 26, end: 31, comp: 0b000000 },
+      ],
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        let shamt = imm & 0b111111;
-        match imm >> 6 {
-          // SRLI
-          0b000000 => cpu.regs.set(rd, cpu.regs[rs1 as usize] >> shamt),
-          // SRAI
-          0b010000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] as i64 >> shamt) as u64),
-          // TODO: handle unknown instruction
-          _ => panic!("unknown instruction"),
-        }
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, cpu.regs[rs1] >> shamt);
+      },
+    },
+
+    Instructor {
+      name: "SRAI",
+      opcode: 0b0010011,
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b101 },
+        InstructionSegment { start: 26, end: 31, comp: 0b010000 },
+      ],
+      run: |inst, cpu| {
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as u64);
       },
     },
 
@@ -479,50 +491,52 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1 as usize].wrapping_add(imm as u64) as i32 as i64 as u64);
+        cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64) as i32 as i64 as u64);
       },
     },
 
     Instructor {
       name: "SLLIW",
       opcode: 0b0011011,
-      segments: funct3(0b001),
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b001 },
+        InstructionSegment { start: 26, end: 31, comp: 0b000000 },
+      ],
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        // TODO: support rv32i ?
-        let shamt = imm & 0b111111;
-        cpu.regs.set(rd, (cpu.regs[rs1 as usize] << shamt) as i32 as i64 as u64);
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
       },
     },
 
     Instructor {
       name: "SRLIW",
       opcode: 0b0011011,
-      segments: funct3(0b001),
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b101 },
+        InstructionSegment { start: 26, end: 31, comp: 0b000000 },
+      ],
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        // TODO: support rv32i ?
-        let shamt = imm & 0b111111;
-        cpu.regs.set(rd, (cpu.regs[rs1 as usize] >> shamt) as i32 as i64 as u64);
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
       },
     },
 
-    // TODO
     Instructor {
-      name: "SRLIW/SRAIW",
+      name: "SRAIW",
       opcode: 0b0011011,
-      segments: funct3(0b101),
+      segments: vec![
+        InstructionSegment { start: 12, end: 14, comp: 0b101 },
+        InstructionSegment { start: 26, end: 31, comp: 0b010000 },
+      ],
       run: |inst, cpu| {
-        let I { imm, rs1, rd } = inst.i();
-        let shamt = imm & 0b111111;
-        match imm >> 6 {
-          // SRLI
-          0b000000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] >> shamt) as i32 as i64 as u64),
-          // SRAI
-          0b010000 => cpu.regs.set(rd, (cpu.regs[rs1 as usize] as i64 >> shamt) as i32 as i64 as u64),
-          // TODO: handle unknown instruction
-          _ => panic!("unknown instruction"),
-        }
+        let shamt = inst >> 20 & 0b111111;
+        let rs1 = (inst >> 15 & 0b11111) as usize;
+        let rd = (inst >> 7 & 0b11111) as usize;
+        cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64);
       },
     },
 
