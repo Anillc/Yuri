@@ -121,7 +121,9 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp(0b00, 0b00011),
       run: |inst, cpu| {
         let RFP { rs2, rs1, rd } = inst.rfp();
-        cpu.fregs.set(rd, (rs1 / rs2) as f64);
+        let a = cpu.fregs[rs1] as f32;
+        let b = cpu.fregs[rs2] as f32;
+        cpu.fregs.set(rd, (a / b) as f64);
       },
     },
 
@@ -131,7 +133,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00000, 0b00, 0b01011),
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
-        cpu.fregs.set(rd, cpu.fregs[rs1].sqrt() as f64);
+        cpu.fregs.set(rd, (cpu.fregs[rs1] as f32).sqrt() as f64);
       },
     },
 
@@ -248,6 +250,18 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.regs.set(rd, if a < b { 1 } else { 0 });
+      },
+    },
+
+    Instructor {
+      name: "FLE.S",
+      opcode: 0b1010011,
+      segments: funct_rfp_rm(0b000, 0b00, 0b10100),
+      run: |inst, cpu| {
+        let RFP { rs2, rs1, rd } = inst.rfp();
+        let a = cpu.fregs[rs1] as f32;
+        let b = cpu.fregs[rs2] as f32;
+        cpu.regs.set(rd, if a <= b { 1 } else { 0 });
       },
     },
 
