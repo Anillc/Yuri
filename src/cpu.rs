@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr};
+use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::parse};
 
 pub struct Cpu<'a> {
   pub(crate) mem: Memory<'a>,
@@ -18,5 +18,10 @@ impl<'a> Cpu<'a> {
       csr: Csr::new(),
     }
   }
-  fn step() {}
+  pub(crate) fn step(&mut self) {
+    let inst = self.mem.read32(self.pc);
+    let instructor = parse(inst);
+    (instructor.run)(inst, self);
+    self.pc += 4;
+  }
 }
