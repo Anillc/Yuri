@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 
 use crate::cpu::Cpu;
 
-use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a};
+use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f};
 
 mod extensions;
 mod types;
@@ -18,6 +18,7 @@ static INSTRUCTORS: Lazy<HashMap<u8, Vec<(u32, u32, Instructor)>>> = Lazy::new(|
   instructors.extend(zicsr());
   instructors.extend(m());
   instructors.extend(a());
+  instructors.extend(f());
   for instructor in instructors {
     let mut mask = 0u32;
     let mut comp = 0u32;

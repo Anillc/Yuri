@@ -45,6 +45,20 @@ pub(crate) struct RA {
   pub(crate) rd: usize,
 }
 
+// Float Point
+pub(crate) struct RFP {
+  pub(crate) rs2: usize,
+  pub(crate) rs1: usize,
+  pub(crate) rd: usize,
+}
+
+pub(crate) struct RFPRS3 {
+  pub(crate) rs3: usize,
+  pub(crate) rs2: usize,
+  pub(crate) rs1: usize,
+  pub(crate) rd: usize,
+}
+
 pub(crate) trait InstructionParser {
   fn r(&self) -> R;
   fn i(&self) -> I;
@@ -53,6 +67,8 @@ pub(crate) trait InstructionParser {
   fn u(&self) -> U;
   fn j(&self) -> J;
   fn ra(&self) -> RA;
+  fn rfp(&self) -> RFP;
+  fn rfp_rs3(&self) -> RFPRS3;
 }
 
 impl InstructionParser for u32 {
@@ -111,6 +127,23 @@ impl InstructionParser for u32 {
       rd: ((self >> 7) & 0b11111) as usize,
     }
   }
+
+  fn rfp(&self) -> RFP {
+    RFP {
+      rs2: ((self >> 20) & 0b11111) as usize,
+      rs1: ((self >> 15) & 0b11111) as usize,
+      rd: ((self >> 7) & 0b11111) as usize,
+    }
+  }
+
+  fn rfp_rs3(&self) -> RFPRS3 {
+    RFPRS3 {
+      rs3: ((self >> 27) & 0b11111) as usize,
+      rs2: ((self >> 20) & 0b11111) as usize,
+      rs1: ((self >> 15) & 0b11111) as usize,
+      rd: ((self >> 7) & 0b11111) as usize,
+    }
+  }
 }
 
 pub(crate) fn funct3(funct3: u8) -> Vec<InstructionSegment> {
@@ -138,5 +171,43 @@ pub(crate) fn funct_ra_rs2(funct3: u8, funct5: u8) -> Vec<InstructionSegment> {
     InstructionSegment { start: 12, end: 14, comp: funct3 as u32 },
     InstructionSegment { start: 20, end: 24, comp: 0b000 },
     InstructionSegment { start: 27, end: 31, comp: funct5 as u32 },
+  ]
+}
+
+pub(crate) fn funct_rfp(fmt: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 25, end: 26, comp: fmt as u32 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32},
+  ]
+}
+
+pub(crate) fn funct_rfp_rs2(rs2: u8, fmt: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 20, end: 24, comp: rs2 as u32 },
+    InstructionSegment { start: 25, end: 26, comp: fmt as u32 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32},
+  ]
+}
+
+pub(crate) fn funct_rfp_rs3(fmt: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 25, end: 26, comp: fmt as u32 },
+  ]
+}
+
+pub(crate) fn funct_rfp_rm(rm: u8, fmt: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 12, end: 14, comp: rm as u32 },
+    InstructionSegment { start: 25, end: 26, comp: fmt as u32 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32},
+  ]
+}
+
+pub(crate) fn funct_rfp_rs2_rm(rm: u8, rs2: u8, fmt: u8, funct5: u8) -> Vec<InstructionSegment> {
+  vec![
+    InstructionSegment { start: 12, end: 14, comp: rm as u32 },
+    InstructionSegment { start: 20, end: 24, comp: rs2 as u32 },
+    InstructionSegment { start: 25, end: 26, comp: fmt as u32 },
+    InstructionSegment { start: 27, end: 31, comp: funct5 as u32},
   ]
 }
