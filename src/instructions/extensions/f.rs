@@ -1,6 +1,8 @@
 use std::num::FpCategory;
 
-use crate::instructions::{Instructor, types::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, RFP, funct_rfp_rs2, funct_rfp_rm, funct_rfp_rs2_rm}};
+use crate::instructions::Instructor;
+
+use super::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, RFP, funct_rfp_rs2, funct_rfp_rm, funct_rfp_rs2_rm};
 
 pub(crate) fn f() -> Vec<Instructor> {
   Vec::from([

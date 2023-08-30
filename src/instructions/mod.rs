@@ -7,7 +7,6 @@ use crate::cpu::Cpu;
 use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d};
 
 pub(crate) mod extensions;
-pub(crate) mod types;
 
 //                               opcode, (mask, comp, instructor)
 static INSTRUCTORS: Lazy<HashMap<u8, Vec<(u32, u32, Instructor)>>> = Lazy::new(|| {

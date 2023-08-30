@@ -1,4 +1,6 @@
-use crate::instructions::{Instructor, types::{U, InstructionParser, funct3, funct37, J, I, B, R, S}, InstructionSegment};
+use crate::instructions::{Instructor, InstructionSegment};
+
+use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
 pub(crate) fn i() -> Vec<Instructor> {
   Vec::from([

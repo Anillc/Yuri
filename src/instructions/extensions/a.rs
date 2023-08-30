@@ -1,6 +1,8 @@
 use std::sync::atomic::Ordering;
 
-use crate::instructions::{Instructor, types::{funct_ra, funct_ra_rs2, RA, InstructionParser}};
+use crate::instructions::Instructor;
+
+use super::{funct_ra, funct_ra_rs2, RA, InstructionParser};
 
 // TODO: address align
 pub(crate) fn a() -> Vec<Instructor> {

@@ -1,4 +1,6 @@
-use crate::instructions::{Instructor, types::{funct37, R, InstructionParser}};
+use crate::instructions::Instructor;
+
+use super::{funct37, R, InstructionParser};
 
 pub(crate) fn m() -> Vec<Instructor> {
   Vec::from([

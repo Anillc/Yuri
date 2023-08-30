@@ -1,4 +1,6 @@
-use crate::instructions::{Instructor, types::{funct3, I, InstructionParser}};
+use crate::instructions::Instructor;
+
+use super::{funct3, I, InstructionParser};
 
 pub(crate) fn zicsr() -> Vec<Instructor> {
   Vec::from([

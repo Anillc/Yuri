@@ -1,4 +1,6 @@
-use crate::instructions::{Instructor, types::funct3};
+use crate::instructions::Instructor;
+
+use super::funct3;
 
 pub(crate) fn zifenci() -> Vec<Instructor> {
   Vec::from([
