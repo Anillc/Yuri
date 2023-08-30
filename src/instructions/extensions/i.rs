@@ -145,7 +145,7 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "LW",
       opcode: 0b0000011,
-      segments: funct3(0b100),
+      segments: funct3(0b010),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
@@ -157,7 +157,7 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "LBU",
       opcode: 0b0000011,
-      segments: funct3(0b000),
+      segments: funct3(0b100),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);

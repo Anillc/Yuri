@@ -1,4 +1,5 @@
 #![feature(atomic_from_ptr)]
+#![feature(try_blocks)]
 use std::fs;
 
 use elf::{ElfBytes, endian::LittleEndian};
@@ -14,7 +15,7 @@ mod utils;
 
 fn main() {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 10];
-  let file = fs::read("a.out").unwrap();
+  let file = fs::read("/home/anillc/a.out").unwrap();
   let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
   for section in elf.section_headers().unwrap() {
     for i in 0..section.sh_size {
@@ -23,6 +24,7 @@ fn main() {
   }
   let mut cpu = Cpu::new(mem.as_mut());
   cpu.pc = elf.ehdr.e_entry;
+  cpu.regs.set(2, 114514);
   loop {
     cpu.step();
   };
