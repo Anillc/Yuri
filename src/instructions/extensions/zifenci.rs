@@ -1,4 +1,4 @@
-use crate::instructions::Instructor;
+use crate::instructions::{Instructor, InstructorResult};
 
 use super::funct3;
 
@@ -10,6 +10,7 @@ pub(crate) fn zifenci() -> Vec<Instructor> {
       segments: funct3(0b001),
       run: |_inst, _cpu| {
         // do nothing
+        InstructorResult::Success
       },
     },
   ])

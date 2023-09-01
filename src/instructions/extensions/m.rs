@@ -1,4 +1,4 @@
-use crate::instructions::Instructor;
+use crate::instructions::{Instructor, InstructorResult};
 
 use super::{funct37, R, InstructionParser};
 
@@ -11,6 +11,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, (cpu.regs[rs1] as i64).wrapping_mul(cpu.regs[rs2] as i64) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -22,6 +23,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64 as i128)
           .wrapping_mul(cpu.regs[rs2] as i64 as i128) << 64) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -33,6 +35,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64 as i128 as u128)
           .wrapping_mul(cpu.regs[rs2] as u128) << 64) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -44,6 +47,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as u128)
           .wrapping_mul(cpu.regs[rs2] as u128) << 64) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -62,7 +66,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_div(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -79,7 +84,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_div(divisor)
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -98,7 +104,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_rem(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -115,7 +122,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_rem(divisor)
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -126,6 +134,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, (cpu.regs[rs1] as i64 as i32).wrapping_mul(cpu.regs[rs2] as i64 as i32) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -144,7 +153,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_div(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -161,7 +171,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_div(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -180,7 +191,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_rem(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -197,7 +209,8 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else {
           dividend.wrapping_rem(divisor) as u64
         };
-        cpu.regs.set(rd, res)
+        cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
   ])

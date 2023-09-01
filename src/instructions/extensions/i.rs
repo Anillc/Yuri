@@ -1,4 +1,4 @@
-use crate::instructions::{Instructor, InstructionSegment};
+use crate::instructions::{Instructor, InstructionSegment, InstructorResult};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -10,7 +10,8 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![],
       run: |inst, cpu| {
         let U { imm, rd } = inst.u();
-        cpu.regs.set(rd, (imm << 12) as u64);
+        cpu.regs.set(rd, imm as u64);
+        InstructorResult::Success
       },
     },
 
@@ -20,7 +21,8 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![],
       run: |inst, cpu| {
         let U { imm, rd } = inst.u();
-        cpu.regs.set(rd, cpu.pc.wrapping_add((imm << 12) as u64))
+        cpu.regs.set(rd, cpu.pc.wrapping_add(imm as u64));
+        InstructorResult::Success
       }
     },
 
@@ -33,6 +35,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let res = cpu.pc.wrapping_add(4);
         cpu.pc = cpu.pc.wrapping_add(imm as u64);
         cpu.regs.set(rd, res);
+        InstructorResult::Jump
       },
     },
 
@@ -45,6 +48,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let res = cpu.pc.wrapping_add(4);
         cpu.pc = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.regs.set(rd, res);
+        InstructorResult::Jump
       },
     },
 
@@ -56,6 +60,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if cpu.regs[rs1] == cpu.regs[rs2] {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -68,6 +75,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if cpu.regs[rs1] != cpu.regs[rs2] {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -80,6 +90,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if (cpu.regs[rs1] as i64) < (cpu.regs[rs2] as i64) {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -92,6 +105,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if (cpu.regs[rs1] as i64) > (cpu.regs[rs2] as i64) {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -104,6 +120,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if cpu.regs[rs1] < cpu.regs[rs2] {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -116,6 +135,9 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if cpu.regs[rs1] > cpu.regs[rs2] {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
+          InstructorResult::Jump
+        } else {
+          InstructorResult::Success
         }
       },
     },
@@ -129,6 +151,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read8(address) as i8 as i64 as u64;
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -137,10 +160,11 @@ pub(crate) fn i() -> Vec<Instructor> {
       opcode: 0b0000011,
       segments: funct3(0b001),
       run: |inst, cpu| {
-          let I { imm, rs1, rd } = inst.i();
-          let address = cpu.regs[rs1].wrapping_add(imm as u64);
-          let data = cpu.mem.read16(address) as i16 as i64 as u64;
-          cpu.regs.set(rd, data);
+        let I { imm, rs1, rd } = inst.i();
+        let address = cpu.regs[rs1].wrapping_add(imm as u64);
+        let data = cpu.mem.read16(address) as i16 as i64 as u64;
+        cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -153,6 +177,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read32(address) as i32 as i64 as u64;
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -165,6 +190,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read8(address) as u64;
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -177,6 +203,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read16(address) as u64;
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -188,6 +215,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let S { imm, rs2, rs1 } = inst.s();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.mem.write8(address, cpu.regs[rs2] as u8);
+        InstructorResult::Success
       },
     },
 
@@ -199,6 +227,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let S { imm, rs2, rs1 } = inst.s();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.mem.write16(address, cpu.regs[rs2] as u16);
+        InstructorResult::Success
       },
     },
 
@@ -210,6 +239,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let S { imm, rs2, rs1 } = inst.s();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.mem.write32(address, cpu.regs[rs2] as u32);
+        InstructorResult::Success
       },
     },
 
@@ -220,6 +250,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64));
+        InstructorResult::Success
       },
     },
 
@@ -230,6 +261,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, if (cpu.regs[rs1] as i64) < imm { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -240,6 +272,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, if cpu.regs[rs1] < imm as u64 { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -250,6 +283,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, cpu.regs[rs1] ^ (imm as u64));
+        InstructorResult::Success
       },
     },
 
@@ -260,6 +294,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, cpu.regs[rs1] | (imm as u64));
+        InstructorResult::Success
       },
     },
 
@@ -270,6 +305,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, cpu.regs[rs1] & (imm as u64));
+        InstructorResult::Success
       },
     },
 
@@ -280,6 +316,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(cpu.regs[rs2]));
+        InstructorResult::Success
       },
     },
 
@@ -290,6 +327,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_sub(cpu.regs[rs2]));
+        InstructorResult::Success
       },
     },
 
@@ -301,6 +339,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, cpu.regs[rs1] << shamt);
+        InstructorResult::Success
       },
     },
 
@@ -311,6 +350,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, if (cpu.regs[rs1] as i64) < (cpu.regs[rs2] as i64) { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -321,6 +361,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, if cpu.regs[rs1] < cpu.regs[rs2] { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -331,6 +372,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1] ^ cpu.regs[rs2]);
+        InstructorResult::Success
       },
     },
 
@@ -342,6 +384,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, cpu.regs[rs1] >> shamt);
+        InstructorResult::Success
       },
     },
 
@@ -353,6 +396,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64) >> shamt) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -363,6 +407,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1] | cpu.regs[rs2]);
+        InstructorResult::Success
       },
     },
 
@@ -373,6 +418,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1] & cpu.regs[rs2]);
+        InstructorResult::Success
       },
     },
 
@@ -382,6 +428,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |_inst, _cpu| {
         // do nothing
+        InstructorResult::Success
       },
     },
 
@@ -393,6 +440,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       ],
       run: |_inst, _cpu| {
         // TODO
+        InstructorResult::Success
       },
     },
 
@@ -404,6 +452,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       ],
       run: |_inst, _cpu| {
         // TODO
+        InstructorResult::Success
       },
     },
 
@@ -416,6 +465,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read32(address) as u64;
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -428,6 +478,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         let data = cpu.mem.read64(address);
         cpu.regs.set(rd, data);
+        InstructorResult::Success
       },
     },
 
@@ -439,6 +490,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let S { imm, rs2, rs1 } = inst.s();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.mem.write64(address, cpu.regs[rs2]);
+        InstructorResult::Success
       },
     },
 
@@ -454,6 +506,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, cpu.regs[rs1] << shamt);
+        InstructorResult::Success
       },
     },
 
@@ -469,6 +522,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, cpu.regs[rs1] >> shamt);
+        InstructorResult::Success
       },
     },
 
@@ -484,6 +538,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as u64);
+        InstructorResult::Success
       },
     },
 
@@ -494,6 +549,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -509,6 +565,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -524,6 +581,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -539,6 +597,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -549,6 +608,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(cpu.regs[rs2]) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -559,6 +619,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, cpu.regs[rs1].wrapping_sub(cpu.regs[rs2]) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -570,6 +631,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -581,6 +643,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -592,6 +655,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64) >> shamt) as i32 as i64 as u64);
+        InstructorResult::Success
       },
     },
   ])

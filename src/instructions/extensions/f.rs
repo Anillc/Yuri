@@ -1,6 +1,6 @@
 use std::num::FpCategory;
 
-use crate::instructions::Instructor;
+use crate::instructions::{Instructor, InstructorResult};
 
 use super::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, RFP, funct_rfp_rs2, funct_rfp_rm, funct_rfp_rs2_rm};
 
@@ -14,6 +14,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let I { imm, rs1, rd } = inst.i();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.fregs.set(rd, f32::from_bits(cpu.mem.read32(address)) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -25,6 +26,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let S { imm, rs2, rs1 } = inst.s();
         let address = cpu.regs[rs1].wrapping_add(imm as u64);
         cpu.mem.write32(address, (cpu.fregs[rs2] as f32).to_bits());
+        InstructorResult::Success
       },
     },
 
@@ -38,6 +40,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let b = cpu.fregs[rs2] as f32;
         let c = cpu.fregs[rs3] as f32;
         cpu.fregs.set(rd, a.mul_add(b, c) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -51,6 +54,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let b = cpu.fregs[rs2] as f32;
         let c = cpu.fregs[rs3] as f32;
         cpu.fregs.set(rd, a.mul_add(b, -c) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -64,6 +68,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let b = cpu.fregs[rs2] as f32;
         let c = cpu.fregs[rs3] as f32;
         cpu.fregs.set(rd, (-a).mul_add(b, -c) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -77,6 +82,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let b = cpu.fregs[rs2] as f32;
         let c = cpu.fregs[rs3] as f32;
         cpu.fregs.set(rd, (-a).mul_add(b, c) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -89,6 +95,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, (a + b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -101,6 +108,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, (a - b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -113,6 +121,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, (a * b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -126,6 +135,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, (a / b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -136,6 +146,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, (cpu.fregs[rs1] as f32).sqrt() as f64);
+        InstructorResult::Success
       },
     },
 
@@ -148,6 +159,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, a.copysign(b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -160,6 +172,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, a.copysign(-b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -172,6 +185,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = (cpu.fregs[rs1] as f32).to_bits();
         let b = (cpu.fregs[rs2] as f32).to_bits();
         cpu.fregs.set(rd, f32::from_bits(((a & 0x80000000) ^ (b & 0x80000000)) | (a & 0x7fffffff)) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -184,6 +198,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, a.min(b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -196,6 +211,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.fregs.set(rd, a.max(b) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -206,6 +222,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.regs.set(rd, cpu.fregs[rs1] as f32 as i32 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -216,6 +233,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.regs.set(rd, cpu.fregs[rs1] as f32 as u32 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -228,6 +246,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let num = cpu.fregs[rs1];
         let higher = (((num as u64) << 32) - 1) << 32;
         cpu.regs.set(rd, ((num.to_bits()) as u32 as u64) | higher);
+        InstructorResult::Success
       },
     },
 
@@ -240,6 +259,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.regs.set(rd, if a == b { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -252,6 +272,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.regs.set(rd, if a < b { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -264,6 +285,7 @@ pub(crate) fn f() -> Vec<Instructor> {
         let a = cpu.fregs[rs1] as f32;
         let b = cpu.fregs[rs2] as f32;
         cpu.regs.set(rd, if a <= b { 1 } else { 0 });
+        InstructorResult::Success
       },
     },
 
@@ -282,6 +304,7 @@ pub(crate) fn f() -> Vec<Instructor> {
           FpCategory::Nan => if num.is_sign_negative() { 4 } else { 3 },
         };
         cpu.regs.set(rd, res);
+        InstructorResult::Success
       },
     },
 
@@ -292,6 +315,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, cpu.regs[rs1] as i32 as f32 as f64);
+        InstructorResult::Success
       },
     },
 
@@ -302,6 +326,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, cpu.regs[rs1] as u32 as f32 as f64);
+        InstructorResult::Success
       },
     },
 
@@ -312,6 +337,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, f32::from_bits(cpu.regs[rs1] as u32) as f64);
+        InstructorResult::Success
       },
     },
 
@@ -322,6 +348,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.regs.set(rd, cpu.fregs[rs1] as f32 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -332,6 +359,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.regs.set(rd, cpu.fregs[rs1] as f32 as u64);
+        InstructorResult::Success
       },
     },
 
@@ -342,6 +370,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, cpu.regs[rs1] as i32 as f32 as f64);
+        InstructorResult::Success
       },
     },
 
@@ -352,6 +381,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, cpu| {
         let RFP { rs2: _, rs1, rd } = inst.rfp();
         cpu.fregs.set(rd, cpu.regs[rs1] as f32 as f64);
+        InstructorResult::Success
       },
     },
   ])

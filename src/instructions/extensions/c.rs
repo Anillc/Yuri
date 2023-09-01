@@ -226,6 +226,7 @@ fn instructors() -> Vec<CInstructor> {
       },
     },
 
+    // TODO: C.SRLI64 C.SRAI64
     CInstructor {
       opcode: 0b01,
       funct3: 0b100,
@@ -233,12 +234,12 @@ fn instructors() -> Vec<CInstructor> {
         let rs1rd = (inst as u32 >> 7) & 0x7;
         let funct3 = (inst >> 10) & 0b11;
         if funct3 == 0b10 {
-          // C.ADDI
+          // C.ANDI
           let imm = (inst as u64 >> 7) & 0x20
             | (inst as u64 >> 2) & 0x1f;
           let imm = (extend_sign(imm, 6) as i32 as u32) << 20;
-          let rs1 = rs1rd << 15;
-          let rd = rs1rd << 7;
+          let rs1 = (rs1rd + 8) << 15;
+          let rd = (rs1rd + 8) << 7;
           Some(imm | rs1 | 0b111 << 12 | rd | 0b0010011)
         } else if funct3 == 0b11 {
           let rs2 = (rs1rd + 8) << 20;

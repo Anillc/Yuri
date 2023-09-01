@@ -114,7 +114,7 @@ impl InstructionParser for u32 {
 
   fn u(&self) -> U {
     U {
-      imm: extend_sign(((self >> 12) & 0b11111111111111111111) as u64, 20),
+      imm: extend_sign((self & 0b11111111111111111111000000000000) as u64, 32),
       rd: ((self >> 7) & 0b11111) as usize,
     }
   }

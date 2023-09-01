@@ -33,13 +33,17 @@ pub(crate) struct InstructionSegment {
   pub(crate) comp: u32,
 }
 
+pub(crate) enum InstructorResult {
+  Success, Jump, Trap
+}
+
 #[derive(Debug)]
 pub(crate) struct Instructor {
   #[allow(dead_code)]
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
-  pub(crate) run: fn(inst: u32, cpu: &mut Cpu)
+  pub(crate) run: fn(inst: u32, cpu: &mut Cpu) -> InstructorResult
 }
 
 impl Instructor {

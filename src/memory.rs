@@ -1,7 +1,5 @@
 use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64}};
 
-
-
 pub(crate) struct Memory<'a> {
   mem: &'a mut [u8],
   reservation: Mutex<Vec<u64>>,
