@@ -14,17 +14,18 @@ mod csr;
 mod utils;
 
 fn main() {
-  let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 10];
+  let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];
   let file = fs::read("/home/anillc/a.out").unwrap();
   let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
-  for section in elf.section_headers().unwrap() {
-    for i in 0..section.sh_size {
-      mem[(section.sh_addr + i) as usize] = file[(section.sh_offset + i) as usize];
+  for segment in elf.segments().unwrap() {
+    for i in 0..segment.p_filesz {
+      if segment.p_type != elf::abi::PT_LOAD { continue; }
+      mem[(segment.p_vaddr + i) as usize] = file[(segment.p_offset + i) as usize];
     }
   }
   let mut cpu = Cpu::new(mem.as_mut());
   cpu.pc = elf.ehdr.e_entry;
-  cpu.regs.set(2, 114514);
+  cpu.regs.set(2, 0x6f00);
   loop {
     cpu.step();
   };

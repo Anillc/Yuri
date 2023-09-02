@@ -544,7 +544,7 @@ pub(crate) fn i() -> Vec<Instructor> {
 
     Instructor {
       name: "ADDIW",
-      opcode: 0b0010011,
+      opcode: 0b0011011,
       segments: funct3(0b000),
       run: |inst, cpu| {
         let I { imm, rs1, rd } = inst.i();
