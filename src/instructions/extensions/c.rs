@@ -226,14 +226,31 @@ fn instructors() -> Vec<CInstructor> {
       },
     },
 
-    // TODO: C.SRLI64 C.SRAI64
     CInstructor {
       opcode: 0b01,
       funct3: 0b100,
       decompress: |inst| {
         let rs1rd = (inst as u32 >> 7) & 0x7;
         let funct3 = (inst >> 10) & 0b11;
-        if funct3 == 0b10 {
+        if funct3 == 0b00 {
+          // C.SRLI
+          let imm = (inst as u32 >> 7) & 0x20
+            | (inst as u32 >> 2) & 0x1f;
+          let imm = imm << 20;
+          let rd = (inst as u32 >> 7) & 0b111;
+          let rs1 = (rd + 8) << 15;
+          let rd = (rd + 8) << 7;
+          Some(imm | rs1 | 0b010 << 12 | rd | 0b0010011)
+        } else if funct3 == 0b01 {
+          // C.SRAI
+          let imm = (inst as u32 >> 7) & 0x20
+            | (inst as u32 >> 2) & 0x1f;
+          let imm = imm << 20;
+          let rd = (inst as u32 >> 7) & 0b111;
+          let rs1 = (rd + 8) << 15;
+          let rd = (rd + 8) << 7;
+          Some(0b0100000 << 25 | imm | rs1 | 0b010 << 12 | rd | 0b0010011)
+        } else if funct3 == 0b10 {
           // C.ANDI
           let imm = (inst as u64 >> 7) & 0x20
             | (inst as u64 >> 2) & 0x1f;
