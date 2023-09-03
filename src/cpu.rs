@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor, InstructorResult}};
+use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor}};
 
 pub struct Cpu<'a> {
   pub(crate) mem: Memory<'a>,
@@ -21,26 +21,20 @@ impl<'a> Cpu<'a> {
 
   pub(crate) fn step(&mut self) {
     let inst = self.mem.read32(self.pc);
-    let parsed: Option<(&Instructor, u32, u64)> = try {
+    let parsed: Option<(&Instructor, u32, usize)> = try {
       let (inst, add) = if inst & 0b11 == 0b11 {
-        if inst == 0xd8e33303 {
-          dbg!(123);
-        }
         println!("{:x}", inst);
-        (inst, 4)
+        (inst, 32)
       } else {
         println!("{:x}", inst as u16);
-        (decompress((inst) as u16)?, 2)
+        (decompress((inst) as u16)?, 16)
       };
       (parse(inst)?, inst, add)
     };
     // TODO: illegal instruction
-    let (instructor, inst, pc_add) = parsed.unwrap();
-    let result = (instructor.run)(inst, self);
-    match result {
-      InstructorResult::Success => self.pc += pc_add,
-      InstructorResult::Jump => {},
-      InstructorResult::Trap => {},
-    };
+    let (instructor, inst, len) = parsed.unwrap();
+    let result = (instructor.run)(inst, len, self);
+    result.unwrap();
+    self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 });
   }
 }
