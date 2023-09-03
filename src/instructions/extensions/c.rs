@@ -104,8 +104,8 @@ fn instructors() -> Vec<CInstructor> {
         // C.FSD
         let imm = (inst as u32 >> 7) & 0x38
           | ((inst as u32) << 1) & 0xc0;
-        let imm2 = ((imm >> 5) & 0x38) << 25;
-        let imm1 = (imm & 0xc0) << 7;
+        let imm2 = ((imm >> 5) & 0x7f) << 25;
+        let imm1 = (imm & 0x1f) << 7;
         let rs2 = (inst as u32 >> 2) & 0x7;
         let rs2 = (rs2 + 8) << 20;
         let rs1 = (inst as u32 >> 7) & 0x7;
@@ -122,8 +122,8 @@ fn instructors() -> Vec<CInstructor> {
         let imm = (inst as u32 >> 7) & 0x38
           | (inst as u32 >> 4) & 0x4
           | ((inst as u32) << 1) & 0x40;
-        let imm2 = ((imm >> 5) & 0x38) << 25;
-        let imm1 = (imm & 0xc0) << 7;
+        let imm2 = ((imm >> 5) & 0x7f) << 25;
+        let imm1 = (imm & 0x1f) << 7;
         let rs2 = (inst as u32 >> 2) & 0x7;
         let rs2 = (rs2 + 8) << 20;
         let rs1 = (inst as u32 >> 7) & 0x7;
@@ -139,8 +139,8 @@ fn instructors() -> Vec<CInstructor> {
         // C.SD
         let imm = (inst as u32 >> 7) & 0x38
           | ((inst as u32) << 1) & 0xc0;
-        let imm2 = ((imm >> 5) & 0x38) << 25;
-        let imm1 = (imm & 0xc0) << 7;
+        let imm2 = ((imm >> 5) & 0x7f) << 25;
+        let imm1 = (imm & 0x1f) << 7;
         let rs2 = (inst as u32 >> 2) & 0x7;
         let rs2 = (rs2 + 8) << 20;
         let rs1 = (inst as u32 >> 7) & 0x7;
@@ -219,7 +219,7 @@ fn instructors() -> Vec<CInstructor> {
           // C.LUI
           let imm = ((inst as u64) << 5) & 0x20000
             | ((inst as u64) << 10) & 0x1f000;
-          let imm = (extend_sign(imm, 18) as i32 as u32) << 12;
+          let imm = extend_sign(imm, 18) as i32 as u32;
           let rd = rd << 7;
           Some(imm | rd | 0b0110111)
         }
@@ -242,10 +242,11 @@ fn instructors() -> Vec<CInstructor> {
           let rd = (rs1rd + 8) << 7;
           Some(imm | rs1 | 0b111 << 12 | rd | 0b0010011)
         } else if funct3 == 0b11 {
-          let rs2 = (rs1rd + 8) << 20;
+          let rs2 = (inst as u32 >> 2) & 0b111;
+          let rs2 = (rs2 + 8) << 20;
           let rs1 = (rs1rd + 8) << 15;
-          let rd = rs1;
-          let funct1 = (inst >> 12) &0b1;
+          let rd = (rs1rd + 8) << 7;
+          let funct1 = (inst >> 12) & 0b1;
           let funct2 = (inst >> 5) & 0b11;
           match (funct1, funct2) {
             (0b0, 0b00) => {
@@ -451,9 +452,9 @@ fn instructors() -> Vec<CInstructor> {
           } else {
             // C.ADD
             let rs2 = rs2 << 20;
-            let rs1 = rs1 << 15;
+            let rs1s = rs1 << 15;
             let rd = rs1 << 7;
-            Some(rs2 | rs1 | rd | 0b0110011)
+            Some(rs2 | rs1s | rd | 0b0110011)
           }
         }
       },

@@ -12,6 +12,7 @@ mod memory;
 mod instructions;
 mod csr;
 mod utils;
+mod syscall;
 
 fn main() {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];

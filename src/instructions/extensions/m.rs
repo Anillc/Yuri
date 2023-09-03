@@ -59,7 +59,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as i64;
         let divisor = cpu.regs[rs2] as i64;
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           u64::MAX
         } else if dividend == i64::MIN || divisor == -1 {
           dividend as u64
@@ -79,7 +79,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1];
         let divisor = cpu.regs[rs2];
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           u64::MAX
         } else {
           dividend.wrapping_div(divisor)
@@ -146,7 +146,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as i32;
         let divisor = cpu.regs[rs2] as i32;
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           u64::MAX
         } else if dividend == i32::MIN || divisor == -1 {
           dividend as u64
@@ -166,7 +166,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as u32;
         let divisor = cpu.regs[rs2] as u32;
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           u64::MAX as u64
         } else {
           dividend.wrapping_div(divisor) as u64

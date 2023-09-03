@@ -1,4 +1,4 @@
-use crate::instructions::{Instructor, InstructionSegment, InstructorResult};
+use crate::{instructions::{Instructor, InstructionSegment, InstructorResult}, syscall::SYSCALL_MAP};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -103,7 +103,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b101),
       run: |inst, cpu| {
         let B { imm, rs2, rs1 } = inst.b();
-        if (cpu.regs[rs1] as i64) > (cpu.regs[rs2] as i64) {
+        if (cpu.regs[rs1] as i64) >= (cpu.regs[rs2] as i64) {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
           InstructorResult::Jump
         } else {
@@ -133,7 +133,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b111),
       run: |inst, cpu| {
         let B { imm, rs2, rs1 } = inst.b();
-        if cpu.regs[rs1] > cpu.regs[rs2] {
+        if cpu.regs[rs1] >= cpu.regs[rs2] {
           cpu.pc = cpu.pc.wrapping_add(imm as u64);
           InstructorResult::Jump
         } else {
@@ -438,8 +438,21 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 }
       ],
-      run: |_inst, _cpu| {
+      run: |_inst, cpu| {
         // TODO
+        let num = cpu.regs[17];
+        let num = SYSCALL_MAP.get(&num).unwrap();
+        let res = unsafe {
+          libc::syscall(*num,
+            cpu.regs[10],
+            cpu.regs[11],
+            cpu.regs[12],
+            cpu.regs[13],
+            cpu.regs[14],
+            cpu.regs[15],
+            cpu.regs[16])
+        };
+        cpu.regs.set(10, res as u64);
         InstructorResult::Success
       },
     },

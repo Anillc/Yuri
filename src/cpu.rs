@@ -23,8 +23,13 @@ impl<'a> Cpu<'a> {
     let inst = self.mem.read32(self.pc);
     let parsed: Option<(&Instructor, u32, u64)> = try {
       let (inst, add) = if inst & 0b11 == 0b11 {
+        if inst == 0xd8e33303 {
+          dbg!(123);
+        }
+        println!("{:x}", inst);
         (inst, 4)
       } else {
+        println!("{:x}", inst as u16);
         (decompress((inst) as u16)?, 2)
       };
       (parse(inst)?, inst, add)
