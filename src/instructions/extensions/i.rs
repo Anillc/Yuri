@@ -1,4 +1,4 @@
-use crate::{instructions::{Instructor, InstructionSegment}, syscall::SYSCALL_MAP};
+use crate::instructions::{Instructor, InstructionSegment};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -434,21 +434,8 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 }
       ],
-      run: |_inst, _len, cpu| {
+      run: |_inst, _len, _cpu| {
         // TODO
-        let num = cpu.regs[17];
-        let num = SYSCALL_MAP.get(&num).unwrap();
-        let res = unsafe {
-          libc::syscall(*num,
-            cpu.regs[10],
-            cpu.regs[11],
-            cpu.regs[12],
-            cpu.regs[13],
-            cpu.regs[14],
-            cpu.regs[15],
-            cpu.regs[16])
-        };
-        cpu.regs.set(10, res as u64);
         Ok(())
       },
     },

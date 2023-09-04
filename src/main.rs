@@ -12,11 +12,10 @@ mod memory;
 mod instructions;
 mod csr;
 mod utils;
-mod syscall;
 
 fn main() {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];
-  let file = fs::read("/home/anillc/a.out").unwrap();
+  let file = fs::read("../riscv-tests/isa/rv64ui-u-addw").unwrap();
   let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
   for segment in elf.segments().unwrap() {
     for i in 0..segment.p_filesz {
