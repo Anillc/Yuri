@@ -375,7 +375,7 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "SRL",
       opcode: 0b0110011,
-      segments: funct37(0b100, 0b0000000),
+      segments: funct37(0b101, 0b0000000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
@@ -387,7 +387,7 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "SRA",
       opcode: 0b0110011,
-      segments: funct37(0b100, 0b0100000),
+      segments: funct37(0b101, 0b0100000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b111111;
@@ -544,7 +544,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, _len, cpu| {
         let I { imm, rs1, rd } = inst.i();
-        cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(imm as u64) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 as i32).wrapping_add(imm as i32) as i64 as u64);
         Ok(())
       },
     },
@@ -560,7 +560,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, ((cpu.regs[rs1] as u32 as i32) << shamt) as i64 as u64);
         Ok(())
       },
     },
@@ -576,7 +576,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 >> shamt) as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -592,7 +592,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 as i32 >> shamt) as i64 as u64);
         Ok(())
       },
     },
@@ -603,7 +603,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct37(0b000, 0b0000000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
-        cpu.regs.set(rd, cpu.regs[rs1].wrapping_add(cpu.regs[rs2]) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 as i32).wrapping_add(cpu.regs[rs2] as u32 as i32) as i64 as u64);
         Ok(())
       },
     },
@@ -614,7 +614,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct37(0b000, 0b0100000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
-        cpu.regs.set(rd, cpu.regs[rs1].wrapping_sub(cpu.regs[rs2]) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 as i32).wrapping_sub(cpu.regs[rs2] as u32 as i32) as i64 as u64);
         Ok(())
       },
     },
@@ -626,7 +626,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b11111;
-        cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, ((cpu.regs[rs1] as u32 as i32) << shamt) as i64 as u64);
         Ok(())
       },
     },
@@ -634,11 +634,11 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "SRLW",
       opcode: 0b0111011,
-      segments: funct37(0b100, 0b0000000),
+      segments: funct37(0b101, 0b0000000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b11111;
-        cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 >> shamt) as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -646,11 +646,11 @@ pub(crate) fn i() -> Vec<Instructor> {
     Instructor {
       name: "SRAW",
       opcode: 0b0111011,
-      segments: funct37(0b100, 0b0100000),
+      segments: funct37(0b101, 0b0100000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         let shamt = cpu.regs[rs2] & 0b11111;
-        cpu.regs.set(rd, ((cpu.regs[rs1] as i64) >> shamt) as i32 as i64 as u64);
+        cpu.regs.set(rd, (cpu.regs[rs1] as u32 as i32 >> shamt) as i64 as u64);
         Ok(())
       },
     },
