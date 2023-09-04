@@ -22,7 +22,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64 as i128)
-          .wrapping_mul(cpu.regs[rs2] as i64 as i128) << 64) as u64);
+          .wrapping_mul(cpu.regs[rs2] as i64 as i128) >> 64) as u64);
         Ok(())
       },
     },
@@ -34,7 +34,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64 as i128 as u128)
-          .wrapping_mul(cpu.regs[rs2] as u128) << 64) as u64);
+          .wrapping_mul(cpu.regs[rs2] as u128) >> 64) as u64);
         Ok(())
       },
     },
@@ -46,7 +46,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
         cpu.regs.set(rd, ((cpu.regs[rs1] as u128)
-          .wrapping_mul(cpu.regs[rs2] as u128) << 64) as u64);
+          .wrapping_mul(cpu.regs[rs2] as u128) >> 64) as u64);
         Ok(())
       },
     },
@@ -97,7 +97,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as i64;
         let divisor = cpu.regs[rs2] as i64;
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           dividend as u64
         } else if dividend == i64::MIN || divisor == -1 {
           0
@@ -117,7 +117,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1];
         let divisor = cpu.regs[rs2];
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           dividend
         } else {
           dividend.wrapping_rem(divisor)
@@ -151,7 +151,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         } else if dividend == i32::MIN || divisor == -1 {
           dividend as u64
         } else {
-          dividend.wrapping_div(divisor) as u64
+          dividend.wrapping_div(divisor) as i32 as i64 as u64
         };
         cpu.regs.set(rd, res);
         Ok(())
@@ -166,10 +166,11 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as u32;
         let divisor = cpu.regs[rs2] as u32;
+        // TODO: Trap
         let res = if divisor == 0 {
           u64::MAX as u64
         } else {
-          dividend.wrapping_div(divisor) as u64
+          dividend.wrapping_div(divisor) as i32 as i64 as u64
         };
         cpu.regs.set(rd, res);
         Ok(())
@@ -184,12 +185,12 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as i32;
         let divisor = cpu.regs[rs2] as i32;
-        let res = if dividend == 0 {
+        let res = if divisor == 0 {
           dividend as u64
         } else if dividend == i32::MIN || divisor == -1 {
           0
         } else {
-          dividend.wrapping_rem(divisor) as u64
+          dividend.wrapping_rem(divisor) as i32 as i64 as u64
         };
         cpu.regs.set(rd, res);
         Ok(())
@@ -204,10 +205,10 @@ pub(crate) fn m() -> Vec<Instructor> {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = cpu.regs[rs1] as u32;
         let divisor = cpu.regs[rs2] as u32;
-        let res = if dividend == 0 {
-          dividend as u64
+        let res = if divisor == 0 {
+          dividend as i32 as i64 as u64
         } else {
-          dividend.wrapping_rem(divisor) as u64
+          dividend.wrapping_rem(divisor) as i32 as i64 as u64
         };
         cpu.regs.set(rd, res);
         Ok(())

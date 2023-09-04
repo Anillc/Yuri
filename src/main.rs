@@ -39,7 +39,7 @@ fn main() {
     let file = file.unwrap();
     let name = file.file_name();
     let name = name.to_str().unwrap();
-    if name.starts_with("rv64ui-u-") && !name.contains(".") {
+    if name.starts_with("rv64um-u-") && !name.contains(".") {
       run_program(file.path().to_str().unwrap());
     }
   }
