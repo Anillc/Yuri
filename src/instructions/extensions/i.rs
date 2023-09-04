@@ -1,4 +1,4 @@
-use crate::instructions::{Instructor, InstructionSegment};
+use crate::instructions::{Instructor, InstructionSegment, Trap};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -436,7 +436,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       ],
       run: |_inst, _len, _cpu| {
         // TODO
-        Ok(())
+        Err(Trap::Exit)
       },
     },
 
@@ -448,7 +448,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       ],
       run: |_inst, _len, _cpu| {
         // TODO
-        Ok(())
+        panic!("test failed")
       },
     },
 

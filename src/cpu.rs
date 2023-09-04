@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor}};
+use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor, Trap}};
 
 pub struct Cpu<'a> {
   pub(crate) mem: Memory<'a>,
@@ -19,7 +19,7 @@ impl<'a> Cpu<'a> {
     }
   }
 
-  pub(crate) fn step(&mut self) {
+  pub(crate) fn step(&mut self) -> bool {
     let inst = self.mem.read32(self.pc);
     let parsed: Option<(&Instructor, u32, usize)> = try {
       let (inst, add) = if inst & 0b11 == 0b11 {
@@ -34,7 +34,14 @@ impl<'a> Cpu<'a> {
     // TODO: illegal instruction
     let (instructor, inst, len) = parsed.unwrap();
     let result = (instructor.run)(inst, len, self);
-    result.unwrap();
+    if let Err(trap) = result {
+      match trap {
+        Trap::Exit => {
+          return  false;
+        },
+    }
+    }
     self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 });
+    true
   }
 }

@@ -13,9 +13,9 @@ mod instructions;
 mod csr;
 mod utils;
 
-fn main() {
+fn run_program<'a>(path: &'a str) {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];
-  let file = fs::read("../riscv-tests/isa/rv64ui-u-addw").unwrap();
+  let file = fs::read(path).unwrap();
   let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
   for segment in elf.segments().unwrap() {
     for i in 0..segment.p_filesz {
@@ -27,6 +27,20 @@ fn main() {
   cpu.pc = elf.ehdr.e_entry;
   cpu.regs.set(2, 0x6f00);
   loop {
-    cpu.step();
+    if !cpu.step() {
+      break;
+    }
   };
+}
+
+fn main() {
+  let dir = fs::read_dir("../riscv-tests/isa").unwrap();
+  for file in dir {
+    let file = file.unwrap();
+    let name = file.file_name();
+    let name = name.to_str().unwrap();
+    if name.starts_with("rv64ui-u-") && !name.contains(".") {
+      run_program(file.path().to_str().unwrap());
+    }
+  }
 }

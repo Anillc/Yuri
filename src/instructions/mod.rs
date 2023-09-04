@@ -34,13 +34,19 @@ pub(crate) struct InstructionSegment {
 }
 
 #[derive(Debug)]
+pub(crate) enum Trap {
+  // TODO: this is for testing
+  Exit,
+}
+
+#[derive(Debug)]
 pub(crate) struct Instructor {
   #[allow(dead_code)]
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
   // TODO: Trap
-  pub(crate) run: fn(inst: u32, len: usize, cpu: &mut Cpu) -> Result<(), ()>
+  pub(crate) run: fn(inst: u32, len: usize, cpu: &mut Cpu) -> Result<(), Trap>
 }
 
 impl Instructor {
