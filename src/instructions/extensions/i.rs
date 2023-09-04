@@ -557,7 +557,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         InstructionSegment { start: 26, end: 31, comp: 0b000000 },
       ],
       run: |inst, _len, cpu| {
-        let shamt = inst >> 20 & 0b111111;
+        let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
@@ -573,7 +573,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         InstructionSegment { start: 26, end: 31, comp: 0b000000 },
       ],
       run: |inst, _len, cpu| {
-        let shamt = inst >> 20 & 0b111111;
+        let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
@@ -589,7 +589,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         InstructionSegment { start: 26, end: 31, comp: 0b010000 },
       ],
       run: |inst, _len, cpu| {
-        let shamt = inst >> 20 & 0b111111;
+        let shamt = inst >> 20 & 0b11111;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         cpu.regs.set(rd, (cpu.regs[rs1] as i64 >> shamt) as i32 as i64 as u64);
@@ -625,7 +625,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct37(0b001, 0b0000000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
-        let shamt = cpu.regs[rs2] & 0b111111;
+        let shamt = cpu.regs[rs2] & 0b11111;
         cpu.regs.set(rd, (cpu.regs[rs1] << shamt) as i32 as i64 as u64);
         Ok(())
       },
@@ -637,7 +637,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct37(0b100, 0b0000000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
-        let shamt = cpu.regs[rs2] & 0b111111;
+        let shamt = cpu.regs[rs2] & 0b11111;
         cpu.regs.set(rd, (cpu.regs[rs1] >> shamt) as i32 as i64 as u64);
         Ok(())
       },
@@ -649,7 +649,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct37(0b100, 0b0100000),
       run: |inst, _len, cpu| {
         let R { rs2, rs1, rd } = inst.r();
-        let shamt = cpu.regs[rs2] & 0b111111;
+        let shamt = cpu.regs[rs2] & 0b11111;
         cpu.regs.set(rd, ((cpu.regs[rs1] as i64) >> shamt) as i32 as i64 as u64);
         Ok(())
       },
