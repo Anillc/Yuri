@@ -45,10 +45,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.swap(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.swap(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -60,10 +59,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_add(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_add(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -75,10 +73,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_xor(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_xor(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -90,10 +87,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_and(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_and(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -105,10 +101,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_or(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_or(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -120,10 +115,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]) as i32;
         let atomic = cpu.mem.atomic32i(address);
-        let res = atomic.fetch_min(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_min(cpu.regs[rs2] as i32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -135,10 +129,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]) as i32;
         let atomic = cpu.mem.atomic32i(address);
-        let res = atomic.fetch_max(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_max(cpu.regs[rs2] as i32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -150,10 +143,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_min(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_min(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -165,10 +157,9 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read32(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic32(address);
-        let res = atomic.fetch_max(src, ordering(aq, rl));
-        cpu.regs.set(rd, res as u64);
+        let res = atomic.fetch_max(cpu.regs[rs2] as u32, ordering(aq, rl));
+        cpu.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
     },
@@ -211,9 +202,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.swap(src, ordering(aq, rl));
+        let res = atomic.swap(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -226,9 +216,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_add(src, ordering(aq, rl));
+        let res = atomic.fetch_add(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -241,9 +230,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_xor(src, ordering(aq, rl));
+        let res = atomic.fetch_xor(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -256,9 +244,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_and(src, ordering(aq, rl));
+        let res = atomic.fetch_and(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -271,9 +258,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_or(src, ordering(aq, rl));
+        let res = atomic.fetch_or(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -286,9 +272,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]) as i64;
         let atomic = cpu.mem.atomic64i(address);
-        let res = atomic.fetch_min(src, ordering(aq, rl));
+        let res = atomic.fetch_min(cpu.regs[rs2] as i64, ordering(aq, rl));
         cpu.regs.set(rd, res as u64);
         Ok(())
       },
@@ -301,9 +286,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]) as i64;
         let atomic = cpu.mem.atomic64i(address);
-        let res = atomic.fetch_max(src, ordering(aq, rl));
+        let res = atomic.fetch_max(cpu.regs[rs2] as i64, ordering(aq, rl));
         cpu.regs.set(rd, res as u64);
         Ok(())
       },
@@ -316,9 +300,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_min(src, ordering(aq, rl));
+        let res = atomic.fetch_min(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
@@ -331,9 +314,8 @@ pub(crate) fn a() -> Vec<Instructor> {
       run: |inst, _len, cpu| {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = cpu.regs[rs1];
-        let src = cpu.mem.read64(cpu.regs[rs2]);
         let atomic = cpu.mem.atomic64(address);
-        let res = atomic.fetch_max(src, ordering(aq, rl));
+        let res = atomic.fetch_max(cpu.regs[rs2], ordering(aq, rl));
         cpu.regs.set(rd, res);
         Ok(())
       },
