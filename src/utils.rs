@@ -1,6 +1,6 @@
 use softfloat_wrapper::{RoundingMode, Float, F32};
 
-use crate::cpu::Cpu;
+use crate::cpu::{Cpu, Exception};
 
 pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   let pos = origin & (1 << (length - 1)) == 0;
@@ -12,18 +12,17 @@ pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   }
 }
 
-// TODO: None -> illegal instruction
-pub(crate) fn round_mode(rm: u8, _cpu: &Cpu) -> Option<RoundingMode> {
+// TODO: dynamic rouding mode
+pub(crate) fn round_mode(rm: u8, _cpu: &Cpu) -> Result<RoundingMode, Exception> {
   match rm {
-    0b000 => Some(RoundingMode::TiesToEven),
-    0b001 => Some(RoundingMode::TowardZero),
-    0b010 => Some(RoundingMode::TowardNegative),
-    0b011 => Some(RoundingMode::TowardPositive),
-    0b100 => Some(RoundingMode::TiesToAway),
-    0b101 | 0b110 => None,
+    0b000 => Ok(RoundingMode::TiesToEven),
+    0b001 => Ok(RoundingMode::TowardZero),
+    0b010 => Ok(RoundingMode::TowardNegative),
+    0b011 => Ok(RoundingMode::TowardPositive),
+    0b100 => Ok(RoundingMode::TiesToAway),
+    0b101 | 0b110 => Err(Exception::IllegalInstruction),
     0b111 => {
-      // todo!(" dynamic rounding mode")
-      Some(RoundingMode::TiesToEven)
+      Ok(RoundingMode::TiesToEven)
     },
     _ => unreachable!(),
   }

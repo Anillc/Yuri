@@ -4,7 +4,6 @@ pub(crate) struct Registers {
   regs: [u64; 32],
 }
 
-// TODO: check overflow
 impl Registers {
   pub(crate) fn new() -> Registers {
     Registers { regs: [0; 32] }

@@ -6,17 +6,6 @@ use super::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, R
 
 // TODO: FLW and FSW are only guaranteed to execute atomically if the effective address is naturally aligned.
 
-/*
-TODO:
-Floating-point operations use either a static rounding mode encoded in the instruction, or a dynamic
-rounding mode held in frm. Rounding modes are encoded as shown in Table 11.1. A value of 111 in
-the instruction’s rm field selects the dynamic rounding mode held in frm. If frm is set to an invalid
-value (101–111), any subsequent attempt to execute a floating-point operation with a dynamic
-rounding mode will raise an illegal instruction exception. Some instructions, including widening
-conversions, have the rm field but are nevertheless unaffected by the rounding mode; software
-should set their rm field to RNE (000).
-*/
-
 const NANBOX: u64 = ((-1i64) as u64) << 32;
 
 pub(crate) fn f() -> Vec<Instructor> {
@@ -51,7 +40,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs3(0b00),
       run: |inst, _len, cpu| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         let c = F32::from_bits(cpu.fregs[rs3].unbox());
@@ -66,7 +55,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs3(0b00),
       run: |inst, _len, cpu| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         let c = F32::from_bits(cpu.fregs[rs3].unbox());
@@ -81,7 +70,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs3(0b00),
       run: |inst, _len, cpu| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         let c = F32::from_bits(cpu.fregs[rs3].unbox());
@@ -96,7 +85,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs3(0b00),
       run: |inst, _len, cpu| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         let c = F32::from_bits(cpu.fregs[rs3].unbox());
@@ -111,7 +100,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp(0b00, 0b00000),
       run: |inst, _len, cpu| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         cpu.fregs.set(rd, a.add(b, rm).to_bits() as u64 | NANBOX);
@@ -125,7 +114,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp(0b00, 0b00001),
       run: |inst, _len, cpu| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         cpu.fregs.set(rd, a.sub(b, rm).to_bits() as u64 | NANBOX);
@@ -139,7 +128,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp(0b00, 0b00010),
       run: |inst, _len, cpu| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         cpu.fregs.set(rd, a.mul(b, rm).to_bits() as u64 | NANBOX);
@@ -154,7 +143,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp(0b00, 0b00011),
       run: |inst, _len, cpu| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let a = F32::from_bits(cpu.fregs[rs1].unbox());
         let b = F32::from_bits(cpu.fregs[rs2].unbox());
         cpu.fregs.set(rd, a.div(b, rm).to_bits() as u64 | NANBOX);
@@ -168,7 +157,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00000, 0b00, 0b01011),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_bits(cpu.fregs[rs1].unbox());
         cpu.fregs.set(rd, num.sqrt(rm).to_bits() as u64 | NANBOX);
         Ok(())
@@ -265,7 +254,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00000, 0b00, 0b11000),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_bits(cpu.fregs[rs1].unbox());
         cpu.regs.set(rd, num.to_i32(rm, true) as i64 as u64);
         Ok(())
@@ -278,7 +267,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00001, 0b00, 0b11000),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_bits(cpu.fregs[rs1].unbox());
         cpu.regs.set(rd, num.to_u32(rm, true) as i32 as i64 as u64);
         Ok(())
@@ -353,7 +342,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00000, 0b00, 0b11010),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_i32(cpu.regs[rs1] as i32, rm);
         cpu.fregs.set(rd, num.to_bits() as u64 | NANBOX);
         Ok(())
@@ -366,7 +355,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00001, 0b00, 0b11010),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_u32(cpu.regs[rs1] as u32, rm);
         cpu.fregs.set(rd, num.to_bits() as u64 | NANBOX);
         Ok(())
@@ -390,7 +379,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00010, 0b00, 0b11000),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_bits(cpu.fregs[rs1].unbox());
         cpu.regs.set(rd, num.to_i64(rm, true) as u64);
         Ok(())
@@ -403,7 +392,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00011, 0b00, 0b11000),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_bits(cpu.fregs[rs1].unbox());
         cpu.regs.set(rd, num.to_u64(rm, true) as u64);
         Ok(())
@@ -416,7 +405,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00010, 0b00, 0b11010),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_i64(cpu.regs[rs1] as i64, rm);
         cpu.fregs.set(rd, num.to_bits() as u64 | NANBOX);
         Ok(())
@@ -429,7 +418,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       segments: funct_rfp_rs2(0b00011, 0b00, 0b11010),
       run: |inst, _len, cpu| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
-        let rm = round_mode(rm, cpu).unwrap();
+        let rm = round_mode(rm, cpu)?;
         let num = F32::from_u64(cpu.regs[rs1], rm);
         cpu.fregs.set(rd, num.to_bits() as u64 | NANBOX);
         Ok(())

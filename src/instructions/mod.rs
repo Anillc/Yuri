@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::cpu::Cpu;
+use crate::cpu::{Cpu, Exception};
 
 use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d};
 
@@ -34,19 +34,12 @@ pub(crate) struct InstructionSegment {
 }
 
 #[derive(Debug)]
-pub(crate) enum Trap {
-  // TODO: this is for testing
-  Exit,
-}
-
-#[derive(Debug)]
 pub(crate) struct Instructor {
   #[allow(dead_code)]
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
-  // TODO: Trap
-  pub(crate) run: fn(inst: u32, len: usize, cpu: &mut Cpu) -> Result<(), Trap>
+  pub(crate) run: fn(inst: u32, len: usize, cpu: &mut Cpu) -> Result<(), Exception>
 }
 
 impl Instructor {

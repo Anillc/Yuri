@@ -1,4 +1,4 @@
-use crate::instructions::{Instructor, InstructionSegment, Trap};
+use crate::{instructions::{Instructor, InstructionSegment, Exception}, cpu::Mode};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -434,9 +434,12 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 }
       ],
-      run: |_inst, _len, _cpu| {
-        // TODO
-        Err(Trap::Exit)
+      run: |_inst, _len, cpu| {
+        Err(match cpu.mode {
+          Mode::User => Exception::EnvironmentCallFromUMode,
+          Mode::Supervisor => Exception::EnvironmentCallFromSMode,
+          Mode::Machine => Exception::EnvironmentCallFromMMode,
+        })
       },
     },
 
@@ -447,8 +450,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         InstructionSegment { start: 7, end: 31, comp: 0b0000000000010000000000000 }
       ],
       run: |_inst, _len, _cpu| {
-        // TODO
-        panic!("test failed")
+        Err(Exception::Breakpoint)
       },
     },
 

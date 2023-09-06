@@ -27,9 +27,7 @@ fn run_program<'a>(path: &'a str) {
   cpu.pc = elf.ehdr.e_entry;
   cpu.regs.set(2, 0x6f00);
   loop {
-    if !cpu.step() {
-      break;
-    }
+    cpu.step().unwrap();
   };
 }
 
