@@ -57,6 +57,7 @@ pub(crate) struct RA {
 pub(crate) struct RFP {
   pub(crate) rs2: usize,
   pub(crate) rs1: usize,
+  pub(crate) rm: u8,
   pub(crate) rd: usize,
 }
 
@@ -64,6 +65,7 @@ pub(crate) struct RFPRS3 {
   pub(crate) rs3: usize,
   pub(crate) rs2: usize,
   pub(crate) rs1: usize,
+  pub(crate) rm: u8,
   pub(crate) rd: usize,
 }
 
@@ -140,6 +142,7 @@ impl InstructionParser for u32 {
     RFP {
       rs2: ((self >> 20) & 0b11111) as usize,
       rs1: ((self >> 15) & 0b11111) as usize,
+      rm: ((self >> 12) & 0b111) as u8,
       rd: ((self >> 7) & 0b11111) as usize,
     }
   }
@@ -149,6 +152,7 @@ impl InstructionParser for u32 {
       rs3: ((self >> 27) & 0b11111) as usize,
       rs2: ((self >> 20) & 0b11111) as usize,
       rs1: ((self >> 15) & 0b11111) as usize,
+      rm: ((self >> 12) & 0b111) as u8,
       rd: ((self >> 7) & 0b11111) as usize,
     }
   }
