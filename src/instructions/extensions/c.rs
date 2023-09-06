@@ -93,7 +93,7 @@ fn instructors() -> Vec<CInstructor> {
         let rs1 = (rs1 + 8) << 15;
         let rd = (inst as u32 >> 2) & 0x7;
         let rd = (rd + 8) << 7;
-        Some(imm | rs1 | 0b110 << 12 | rd | 0b0000011)
+        Some(imm | rs1 | 0b011 << 12 | rd | 0b0000011)
       }
     },
 
@@ -240,7 +240,7 @@ fn instructors() -> Vec<CInstructor> {
           let rd = (inst as u32 >> 7) & 0b111;
           let rs1 = (rd + 8) << 15;
           let rd = (rd + 8) << 7;
-          Some(imm | rs1 | 0b010 << 12 | rd | 0b0010011)
+          Some(imm | rs1 | 0b101 << 12 | rd | 0b0010011)
         } else if funct3 == 0b01 {
           // C.SRAI
           let imm = (inst as u32 >> 7) & 0x20
@@ -249,7 +249,7 @@ fn instructors() -> Vec<CInstructor> {
           let rd = (inst as u32 >> 7) & 0b111;
           let rs1 = (rd + 8) << 15;
           let rd = (rd + 8) << 7;
-          Some(0b0100000 << 25 | imm | rs1 | 0b010 << 12 | rd | 0b0010011)
+          Some(0b0100000 << 25 | imm | rs1 | 0b101 << 12 | rd | 0b0010011)
         } else if funct3 == 0b10 {
           // C.ANDI
           let imm = (inst as u64 >> 7) & 0x20
@@ -268,27 +268,27 @@ fn instructors() -> Vec<CInstructor> {
           match (funct1, funct2) {
             (0b0, 0b00) => {
               // C.SUB
-              Some(0b0100000 | rs2 | rs1 | rd | 0b0110011)
+              Some(0b0100000 << 25 | rs2 | rs1 | rd | 0b0110011)
             },
             (0b0, 0b01) => {
               // C.XOR
-              Some(0b0100000 | rs2 | rs1 | 0b100 << 12 | rd | 0b0110011)
+              Some(rs2 | rs1 | 0b100 << 12 | rd | 0b0110011)
             },
             (0b0, 0b10) => {
               // C.OR
-              Some(0b0100000 | rs2 | rs1 | 0b110 << 12 | rd | 0b0110011)
+              Some(rs2 | rs1 | 0b110 << 12 | rd | 0b0110011)
             },
             (0b0, 0b11) => {
               // C.AND
-              Some(0b0100000 | rs2 | rs1 | 0b111 << 12 | rd | 0b0110011)
+              Some(rs2 | rs1 | 0b111 << 12 | rd | 0b0110011)
             },
             (0b1, 0b00) => {
               // C.SUBW
-              Some(0b0100000 | rs2 | rs1 | rd | 0b0111011)
+              Some(0b0100000 << 25 | rs2 | rs1 | rd | 0b0111011)
             },
             (0b1, 0b01) => {
               // C.ADDW
-              Some(0b0000000 | rs2 | rs1 | rd | 0b0111011)
+              Some(rs2 | rs1 | rd | 0b0111011)
 
             },
             _ => None,
