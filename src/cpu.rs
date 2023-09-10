@@ -1,8 +1,27 @@
 use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor}};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum Mode {
   User, Supervisor, Machine,
+}
+
+impl Mode {
+  pub(crate) fn into_u16(&self) -> u16 {
+    match self {
+      Mode::User => 0b00,
+      Mode::Supervisor => 0b01,
+      Mode::Machine => 0b11,
+    }
+  }
+
+  pub(crate) fn from_u8(num: u8) -> Option<Mode> {
+    match num {
+      0b00 => Some(Mode::User),
+      0b01 => Some(Mode::Supervisor),
+      0b11 => Some(Mode::Machine),
+      _ => None,
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -21,6 +40,7 @@ pub struct Cpu<'a> {
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
   pub(crate) csr: Csr,
+  // TODO: optimize to number?
   pub(crate) mode: Mode,
 }
 
