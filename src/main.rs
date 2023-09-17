@@ -10,7 +10,7 @@ mod cpu;
 mod register;
 mod memory;
 mod instructions;
-mod csr;
+mod csrs;
 mod utils;
 
 fn run_program<'a>(path: &'a str) {

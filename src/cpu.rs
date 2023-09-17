@@ -1,4 +1,6 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csr::Csr, instructions::{parse, extensions::c::decompress, Instructor}};
+use std::{cell::RefCell, rc::Rc};
+
+use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::CsrRegistry, instructions::{parse, extensions::c::decompress, Instructor}};
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Mode {
@@ -39,7 +41,7 @@ pub struct Cpu<'a> {
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
-  pub(crate) csr: Csr,
+  pub(crate) csr: Rc<RefCell<CsrRegistry>>,
   // TODO: optimize to number?
   pub(crate) mode: Mode,
 }
@@ -51,7 +53,7 @@ impl<'a> Cpu<'a> {
       regs: Registers::new(),
       fregs: FRegisters::new(),
       pc: 0,
-      csr: Csr::new(),
+      csr: Rc::new(RefCell::new(CsrRegistry::new())),
       mode: Mode::Machine,
     }
   }
