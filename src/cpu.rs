@@ -1,5 +1,3 @@
-use std::{cell::RefCell, rc::Rc};
-
 use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::CsrRegistry, instructions::{parse, extensions::c::decompress, Instructor}};
 
 #[derive(Debug, Clone, Copy)]
@@ -41,7 +39,7 @@ pub struct Cpu<'a> {
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
-  pub(crate) csr: Rc<RefCell<CsrRegistry>>,
+  pub(crate) csr: CsrRegistry,
   // TODO: optimize to number?
   pub(crate) mode: Mode,
 }
@@ -53,7 +51,7 @@ impl<'a> Cpu<'a> {
       regs: Registers::new(),
       fregs: FRegisters::new(),
       pc: 0,
-      csr: Rc::new(RefCell::new(CsrRegistry::new())),
+      csr: CsrRegistry::new(),
       mode: Mode::Machine,
     }
   }

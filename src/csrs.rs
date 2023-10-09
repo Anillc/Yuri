@@ -1,28 +1,18 @@
-use std::array::from_fn;
-
 use crate::cpu::{Exception, Cpu};
 
-pub(crate) trait Csr {
-  fn read(&self, cpu: &Cpu) -> u64;
-  fn write(&mut self, cpu: &mut Cpu, data: u64);
-}
-
 pub(crate) struct CsrRegistry {
-  pub(crate) csr: [Option<Box<dyn Csr>>; 4096],
+  pub(crate) csr: [u64; 4096],
 }
 
 impl CsrRegistry {
   pub(crate) fn new() -> CsrRegistry {
-    let registry = CsrRegistry { csr: from_fn(|_| None) };
+    let registry = CsrRegistry { csr: [0; 4096] };
     registry
   }
 
   pub(crate) fn read(cpu: &Cpu, address: u16) -> Result<u64, Exception> {
     if address >> 8 & 0b11 <= cpu.mode.into_u16() {
-      let csr = cpu.csr.borrow();
-      let csr = csr.csr[address as usize].as_ref()
-        .ok_or(Exception::IllegalInstruction)?;
-      Ok(csr.read(cpu))
+      CsrRegistry::read_raw(cpu, address)
     } else {
       Err(Exception::IllegalInstruction)
     }
@@ -34,14 +24,17 @@ impl CsrRegistry {
       return Err(Exception::IllegalInstruction);
     }
     if address >> 8 & 0b11 <= cpu.mode.into_u16() {
-      let csr = cpu.csr.clone();
-      let mut csr = csr.borrow_mut();
-      let csr = csr.csr[address as usize].as_mut()
-        .ok_or(Exception::IllegalInstruction)?;
-      csr.write(cpu, data);
-      Ok(())
+      CsrRegistry::write_raw(cpu, address, data)
     } else {
       Err(Exception::IllegalInstruction)
     }
+  }
+
+  fn read_raw(cpu: &Cpu, address: u16) -> Result<u64, Exception> {
+    todo!()
+  }
+
+  fn write_raw(cpu: &mut Cpu, address: u16, data: u64) -> Result<(), Exception> {
+    todo!()
   }
 }
