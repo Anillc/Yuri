@@ -27,7 +27,13 @@ fn run_program<'a>(path: &'a str) {
   cpu.pc = elf.ehdr.e_entry;
   cpu.regs.set(2, 0x6f00);
   loop {
-    cpu.step().unwrap();
+    let x = cpu.step();
+    // TODO: this is for test, remove it
+    match x {
+      Ok(_) => {},
+      Err(cpu::Exception::EnvironmentCallFromMMode) => break,
+      other => other.unwrap(),
+    }
   };
 }
 

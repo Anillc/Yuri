@@ -1,6 +1,6 @@
-use softfloat_wrapper::{RoundingMode, Float, F32};
+use softfloat_wrapper::{RoundingMode, Float, F32, ExceptionFlags};
 
-use crate::cpu::{Cpu, Exception};
+use crate::{cpu::{Cpu, Exception}, csrs::CsrRegistry};
 
 pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   let pos = origin & (1 << (length - 1)) == 0;
@@ -12,8 +12,7 @@ pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   }
 }
 
-// TODO: dynamic rouding mode
-pub(crate) fn round_mode(rm: u8, _cpu: &Cpu) -> Result<RoundingMode, Exception> {
+pub(crate) fn round_mode(rm: u8, cpu: &Cpu) -> Result<RoundingMode, Exception> {
   match rm {
     0b000 => Ok(RoundingMode::TiesToEven),
     0b001 => Ok(RoundingMode::TowardZero),
@@ -22,7 +21,11 @@ pub(crate) fn round_mode(rm: u8, _cpu: &Cpu) -> Result<RoundingMode, Exception> 
     0b100 => Ok(RoundingMode::TiesToAway),
     0b101 | 0b110 => Err(Exception::IllegalInstruction),
     0b111 => {
-      Ok(RoundingMode::TiesToEven)
+      let rm = cpu.csr.read_frm();
+      match rm {
+        0b111 => Err(Exception::IllegalInstruction),
+        _ => round_mode(rm, cpu),
+      }
     },
     _ => unreachable!(),
   }
@@ -65,5 +68,34 @@ impl Boxed for u64 {
     } else {
       F32::quiet_nan().to_bits()
     }
+  }
+}
+
+pub(crate) struct FloatFlags {
+  flags: ExceptionFlags,
+}
+
+impl FloatFlags {
+  pub(crate) fn new() -> FloatFlags {
+    let flags = FloatFlags { flags: ExceptionFlags::default() };
+    flags.flags.set();
+    flags
+  }
+
+  pub(crate) fn get(self) -> ExceptionFlags {
+    let FloatFlags { mut flags } = self;
+    flags.get();
+    flags
+  }
+
+  pub(crate) fn write(self, csr: &mut CsrRegistry, dz: bool) {
+    let flags = self.get();
+    let mut data = 0;
+    data |= (flags.is_invalid() as u64) << 4;
+    data |= (dz as u64) << 3;
+    data |= (flags.is_overflow() as u64) << 2;
+    data |= (flags.is_underflow() as u64) << 1;
+    data |= flags.is_inexact() as u64;
+    csr.write_fflags(data);
   }
 }
