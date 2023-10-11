@@ -94,6 +94,10 @@ impl CsrRegistry {
         MARCHID => {},
         MIMPID => {},
         MHARTID => {},
+        MSTATUS => {
+          let mask = 0b1000000000000000000000000011111100000000011111111111111111101010;
+          self.csr[MSTATUS as usize] = data & mask;
+        },
         _ => self.csr[address as usize] = data,
     };
   }
