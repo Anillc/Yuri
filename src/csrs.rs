@@ -69,7 +69,11 @@ impl CsrRegistry {
           let s = 1 << 18;
           let u = 1 << 20;
           mxl | i | m | a | f | d | c | s | u
-        }
+        },
+        MVENDORID => 0,
+        MARCHID => 0,
+        MIMPID => 0,
+        MHARTID => 0,
         _ => self.csr[address as usize],
     }
   }
@@ -86,6 +90,10 @@ impl CsrRegistry {
         },
         FCSR => self.csr[FCSR as usize] = data & 0b11111111,
         MISA => {},
+        MVENDORID => {},
+        MARCHID => {},
+        MIMPID => {},
+        MHARTID => {},
         _ => self.csr[address as usize] = data,
     };
   }
