@@ -16,13 +16,30 @@ const MIDELEG: u16 = 0x303;
 const MIE: u16 = 0x304;
 const MTVEC: u16 = 0x305;
 
-const MSCRATCH: u16 = 0x340;
 const MEPC: u16 = 0x341;
 const MCAUSE: u16 = 0x342;
 const MTVAL: u16 = 0x343;
 const MIP: u16 = 0x344;
 
+const SSTATUS: u16 = 0x100;
+const SIE: u16 = 0x104;
+const STVEC: u16 = 0x105;
+
+const SEPC: u16 = 0x141;
+const SCAUSE: u16 = 0x142;
+const STVAL: u16 = 0x143;
+const SIP: u16 = 0x144;
+
+const SATP: u16 = 0x180;
+
 // TODO: cycle
+
+const MSTATUS_MASK: u64 = 0b1000000000000000000000000011111100000000011111111111111111101010;
+const SSTATUS_MASK: u64 = 0b1000000000000000000000000000001100000000000011011110011101100010;
+const MIE_MASK: u64 = 0b0000101010101010;
+const MIP_MASK: u64 = 0b0000101010101010;
+const SIE_MASK: u64 = 0b0000001000100010;
+const SIP_MASK: u64 = 0b0000001000100010;
 
 pub(crate) struct CsrRegistry {
   pub(crate) csr: [u64; 4096],
@@ -90,10 +107,15 @@ impl CsrRegistry {
         MARCHID => {},
         MIMPID => {},
         MHARTID => {},
-        MSTATUS => {
-          let mask = 0b1000000000000000000000000011111100000000011111111111111111101010;
-          self.csr[MSTATUS as usize] = data & mask;
-        },
+        MSTATUS => self.csr[MSTATUS as usize] = data & MSTATUS_MASK,
+        MIE => self.csr[MIE as usize] = data & MIE_MASK,
+        MIP => self.csr[MIP as usize] = data & MIP_MASK,
+        SIE => self.csr[MIE as usize] =
+          (self.csr[MIE as usize] & !SIE_MASK) | (data & SIE_MASK),
+        SIP => self.csr[MIP as usize] =
+          (self.csr[MIP as usize] & !SIP_MASK) | (data & SIP_MASK),
+        SSTATUS => self.csr[MSTATUS as usize] =
+          (self.csr[MSTATUS as usize] & !SSTATUS_MASK) | (data & SSTATUS_MASK),
         _ => self.csr[address as usize] = data,
     };
   }
