@@ -77,15 +77,16 @@ impl<'a> Cpu<'a> {
     if let Some(interrupt) = interrupt {
       self.handle_trap(Trap::Interrupt(interrupt));
     }
-    let exception = self.instruct();
-    if let Err(exception) = exception {
-      self.handle_trap(Trap::Exception(exception));
-    }
+    match self.instruct() {
+      Ok(len) => self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 }),
+      Err(exception) => self.handle_trap(Trap::Exception(exception)),
+    };
   }
 
-  pub(crate) fn instruct(&mut self) -> Result<(), Exception> {
+  //                               instruction length
+  fn instruct(&mut self) -> Result<u64, Exception> {
     let inst = self.mem.read32(self.pc);
-    let parsed: Option<(&Instructor, u32, usize)> = try {
+    let parsed: Option<(&Instructor, u32, u64)> = try {
       let (inst, add) = if inst & 0b11 == 0b11 {
         println!("{:x}", inst);
         (inst, 32)
@@ -99,9 +100,8 @@ impl<'a> Cpu<'a> {
         Some(parsed) => parsed,
         None => Err(Exception::IllegalInstruction)?,
     };
-    let result = (instructor.run)(inst, len, self);
-    self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 });
-    result
+    (instructor.run)(inst, len, self)?;
+    Ok(len)
   }
 
   fn check_interrupt(&self) -> Option<Interrupt> {
@@ -134,6 +134,6 @@ impl<'a> Cpu<'a> {
   }
 
   fn handle_trap(&mut self, trap: Trap) {
-    
+
   }
 }

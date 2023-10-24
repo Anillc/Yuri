@@ -39,7 +39,7 @@ pub(crate) struct Instructor {
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
-  pub(crate) run: fn(inst: u32, len: usize, cpu: &mut Cpu) -> Result<(), Exception>
+  pub(crate) run: fn(inst: u32, len: u64, cpu: &mut Cpu) -> Result<(), Exception>
 }
 
 impl Instructor {
