@@ -1,4 +1,4 @@
-use crate::cpu::{Exception, Cpu};
+use crate::{cpu::Cpu, trap::Exception};
 
 const FFLAGS: u16 = 0x001;
 const FRM: u16 = 0x002;

@@ -1,6 +1,6 @@
 use std::sync::atomic::Ordering;
 
-use crate::{instructions::Instructor, cpu::Exception};
+use crate::{instructions::Instructor, trap::Exception};
 
 use super::{funct_ra, funct_ra_rs2, RA, InstructionParser};
 
@@ -355,7 +355,7 @@ fn ordering(aq: bool, rl: bool) -> Ordering {
 
 fn align32(address: u64) -> Result<(), Exception>{
   if address % 4 != 0 {
-    Err(Exception::LoadAddressMisaligned)
+    Err(Exception::LoadAddressMisaligned(address))
   } else {
     Ok(())
   }
@@ -363,7 +363,7 @@ fn align32(address: u64) -> Result<(), Exception>{
 
 fn align64(address: u64) -> Result<(), Exception>{
   if address % 8 != 0 {
-    Err(Exception::LoadAddressMisaligned)
+    Err(Exception::LoadAddressMisaligned(address))
   } else {
     Ok(())
   }

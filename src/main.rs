@@ -12,6 +12,7 @@ mod memory;
 mod instructions;
 mod csrs;
 mod utils;
+mod trap;
 
 fn run_program<'a>(path: &'a str) {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];

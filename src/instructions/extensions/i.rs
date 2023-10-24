@@ -1,4 +1,4 @@
-use crate::{instructions::{Instructor, InstructionSegment, Exception}, cpu::Mode};
+use crate::{instructions::{Instructor, InstructionSegment}, cpu::Mode, trap::Exception};
 
 use super::{U, InstructionParser, funct3, funct37, J, I, B, R, S};
 
@@ -449,8 +449,8 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0000000000010000000000000 }
       ],
-      run: |_inst, _len, _cpu| {
-        Err(Exception::Breakpoint)
+      run: |_inst, _len, cpu| {
+        Err(Exception::Breakpoint(cpu.pc))
       },
     },
 

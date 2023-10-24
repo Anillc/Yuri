@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::cpu::{Cpu, Exception};
+use crate::{cpu::Cpu, trap::Exception};
 
 use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d};
 

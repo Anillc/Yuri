@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}};
+use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}};
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Mode {
@@ -22,32 +22,6 @@ impl Mode {
       _ => None,
     }
   }
-}
-
-#[derive(Debug)]
-pub(crate) enum Exception {
-  IllegalInstruction,
-  Breakpoint,
-  LoadAddressMisaligned,
-  EnvironmentCallFromUMode,
-  EnvironmentCallFromSMode,
-  EnvironmentCallFromMMode,
-}
-
-#[derive(Debug)]
-pub(crate) enum Interrupt {
-  SupervisorSoftwareInterrupt,
-  MachineSoftwareInterrupt,
-  SupervisorTimerInterrupt,
-  MachineTimerInterrupt,
-  SupervisorExternalInterrupt,
-  MachineExternalInterrupt,
-}
-
-#[derive(Debug)]
-pub(crate) enum Trap {
-  Exception(Exception),
-  Interrupt(Interrupt),
 }
 
 pub struct Cpu<'a> {
