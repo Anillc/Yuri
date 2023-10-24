@@ -6,7 +6,7 @@ pub(crate) enum Mode {
 }
 
 impl Mode {
-  pub(crate) fn into_u16(&self) -> u16 {
+  pub(crate) fn into_u8(&self) -> u16 {
     match self {
       Mode::User => 0b00,
       Mode::Supervisor => 0b01,
@@ -30,7 +30,6 @@ pub struct Cpu<'a> {
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
   pub(crate) csr: CsrRegistry,
-  // TODO: optimize to number?
   pub(crate) mode: Mode,
 }
 
@@ -123,15 +122,16 @@ impl<'a> Cpu<'a> {
       | Trap::Exception(Exception::LoadAddressMisaligned(value)) => value,
       _ => 0,
     };
-    self.mode = mode;
     let vec = match mode {
       Mode::Machine => {
+        self.csr.trap_into_machine(self.mode);
         self.csr.write_mepc(self.pc);
         self.csr.write_mcause(cause);
         self.csr.write_mtval(trap_value);
         self.csr.read_mtvec()
       },
       Mode::Supervisor => {
+        self.csr.trap_into_supervisor(self.mode);
         self.csr.write_sepc(self.pc);
         self.csr.write_scause(cause);
         self.csr.write_stval(trap_value);
@@ -139,6 +139,7 @@ impl<'a> Cpu<'a> {
       },
       _ => unreachable!(),
     };
+    self.mode = mode;
     match vec & 0b11 {
       0 => self.pc = vec,
       1 => self.pc = (vec & !0b11) + 4 * code,
