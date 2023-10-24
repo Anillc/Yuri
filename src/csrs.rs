@@ -126,6 +126,12 @@ impl CsrRegistry {
           (self.csr[MIP as usize] & !SIP_MASK) | (data & SIP_MASK),
         SSTATUS => self.csr[MSTATUS as usize] =
           (self.csr[MSTATUS as usize] & !SSTATUS_MASK) | (data & SSTATUS_MASK),
+        MTVEC | STVEC => {
+          // ignore mode >= 2
+          let mut mode = data & 0b11;
+          if mode != 0 || mode != 1 { mode = 0; }
+          self.csr[address as usize] = (data & !0b11) | mode;
+        },
         _ => self.csr[address as usize] = data,
     };
   }
