@@ -108,6 +108,41 @@ impl<'a> Cpu<'a> {
   }
 
   fn handle_trap(&mut self, trap: Trap) {
-
+    let code = trap.code();
+    let (cause, delegation) = match trap {
+      Trap::Exception(_) => (code, self.csr.read_medeleg()),
+      Trap::Interrupt(_) => ((1 << 63) | code, self.csr.read_mideleg()),
+    };
+    let mode = if (delegation >> code) & 0b1 == 0 {
+      Mode::Machine
+    } else {
+      Mode::Supervisor
+    };
+    let trap_value = match trap {
+        Trap::Exception(Exception::Breakpoint(value))
+      | Trap::Exception(Exception::LoadAddressMisaligned(value)) => value,
+      _ => 0,
+    };
+    self.mode = mode;
+    let vec = match mode {
+      Mode::Machine => {
+        self.csr.write_mepc(self.pc);
+        self.csr.write_mcause(cause);
+        self.csr.write_mtval(trap_value);
+        self.csr.read_mtvec()
+      },
+      Mode::Supervisor => {
+        self.csr.write_sepc(self.pc);
+        self.csr.write_scause(cause);
+        self.csr.write_stval(trap_value);
+        self.csr.read_stvec()
+      },
+      _ => unreachable!(),
+    };
+    match vec & 0b11 {
+      0 => self.pc = vec,
+      1 => self.pc = (vec & !0b11) + 4 * code,
+      _ => unreachable!(),
+    }
   }
 }

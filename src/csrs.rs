@@ -171,4 +171,44 @@ impl CsrRegistry {
       me: (mie >> 11) & 0b1 == 1,
     }
   }
+
+  pub(crate) fn read_medeleg(&self) -> u64 {
+    self.csr[MEDELEG as usize]
+  }
+
+  pub(crate) fn read_mideleg(&self) -> u64 {
+    self.csr[MIDELEG as usize]
+  }
+
+  pub(crate) fn write_mepc(&mut self, data: u64) {
+    self.csr[MEPC as usize] = data;
+  }
+
+  pub(crate) fn write_sepc(&mut self, data: u64) {
+    self.csr[SEPC as usize] = data;
+  }
+
+  pub(crate) fn write_mcause(&mut self, data: u64) {
+    self.csr[MCAUSE as usize] = data;
+  }
+
+  pub(crate) fn write_scause(&mut self, data: u64) {
+    self.csr[SCAUSE as usize] = data;
+  }
+
+  pub(crate) fn write_mtval(&mut self, data: u64) {
+    self.csr[MTVAL as usize] = data;
+  }
+
+  pub(crate) fn write_stval(&mut self, data: u64) {
+    self.csr[STVAL as usize] = data;
+  }
+
+  pub(crate) fn read_mtvec(&mut self) -> u64 {
+    self.csr[MTVEC as usize]
+  }
+
+  pub(crate) fn read_stvec(&mut self) -> u64 {
+    self.csr[STVEC as usize]
+  }
 }
