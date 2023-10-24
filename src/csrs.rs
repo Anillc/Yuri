@@ -45,6 +45,16 @@ pub(crate) struct CsrRegistry {
   pub(crate) csr: [u64; 4096],
 }
 
+#[derive(Debug)]
+pub(crate) struct MIEP {
+  pub(crate) ss: bool,
+  pub(crate) ms: bool,
+  pub(crate) st: bool,
+  pub(crate) mt: bool,
+  pub(crate) se: bool,
+  pub(crate) me: bool,
+}
+
 impl CsrRegistry {
   pub(crate) fn new() -> CsrRegistry {
     let registry = CsrRegistry { csr: [0; 4096] };
@@ -126,5 +136,39 @@ impl CsrRegistry {
 
   pub(crate) fn write_fflags(&mut self, data: u64) {
     self.write_raw(FFLAGS, data);
+  }
+
+  pub(crate) fn read_mstatus_sie(&self) -> bool {
+    let status = self.csr[MSTATUS as usize];
+    (status >> 1) & 0b1 == 1
+  }
+
+  pub(crate) fn read_mstatus_mie(&self) -> bool {
+    let status = self.csr[MSTATUS as usize];
+    (status >> 3) & 0b1 == 1
+  }
+
+  pub(crate) fn read_mie(&self) -> MIEP {
+    let mie = self.csr[MIE as usize];
+    MIEP {
+      ss: (mie >> 1)  & 0b1 == 1,
+      ms: (mie >> 3)  & 0b1 == 1,
+      st: (mie >> 5)  & 0b1 == 1,
+      mt: (mie >> 7)  & 0b1 == 1,
+      se: (mie >> 9)  & 0b1 == 1,
+      me: (mie >> 11) & 0b1 == 1,
+    }
+  }
+
+  pub(crate) fn read_mip(&self) -> MIEP {
+    let mie = self.csr[MIP as usize];
+    MIEP {
+      ss: (mie >> 1)  & 0b1 == 1,
+      ms: (mie >> 3)  & 0b1 == 1,
+      st: (mie >> 5)  & 0b1 == 1,
+      mt: (mie >> 7)  & 0b1 == 1,
+      se: (mie >> 9)  & 0b1 == 1,
+      me: (mie >> 11) & 0b1 == 1,
+    }
   }
 }

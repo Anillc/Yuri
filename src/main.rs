@@ -29,11 +29,11 @@ fn run_program<'a>(path: &'a str) {
   loop {
     let x = cpu.step();
     // TODO: this is for test, remove it
-    match x {
-      Ok(_) => {},
-      Err(cpu::Exception::EnvironmentCallFromMMode) => break,
-      other => other.unwrap(),
-    }
+    // match x {
+    //   Ok(_) => {},
+    //   Err(cpu::Exception::EnvironmentCallFromMMode) => break,
+    //   other => other.unwrap(),
+    // }
   };
 }
 

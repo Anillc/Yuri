@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::CsrRegistry, instructions::{parse, extensions::c::decompress, Instructor}};
+use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}};
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Mode {
@@ -34,6 +34,22 @@ pub(crate) enum Exception {
   EnvironmentCallFromMMode,
 }
 
+#[derive(Debug)]
+pub(crate) enum Interrupt {
+  SupervisorSoftwareInterrupt,
+  MachineSoftwareInterrupt,
+  SupervisorTimerInterrupt,
+  MachineTimerInterrupt,
+  SupervisorExternalInterrupt,
+  MachineExternalInterrupt,
+}
+
+#[derive(Debug)]
+pub(crate) enum Trap {
+  Exception(Exception),
+  Interrupt(Interrupt),
+}
+
 pub struct Cpu<'a> {
   pub(crate) mem: Memory<'a>,
   pub(crate) regs: Registers,
@@ -56,7 +72,18 @@ impl<'a> Cpu<'a> {
     }
   }
 
-  pub(crate) fn step(&mut self) -> Result<(), Exception> {
+  pub(crate) fn step(&mut self) {
+    let interrupt = self.check_interrupt();
+    if let Some(interrupt) = interrupt {
+      self.handle_trap(Trap::Interrupt(interrupt));
+    }
+    let exception = self.instruct();
+    if let Err(exception) = exception {
+      self.handle_trap(Trap::Exception(exception));
+    }
+  }
+
+  pub(crate) fn instruct(&mut self) -> Result<(), Exception> {
     let inst = self.mem.read32(self.pc);
     let parsed: Option<(&Instructor, u32, usize)> = try {
       let (inst, add) = if inst & 0b11 == 0b11 {
@@ -75,5 +102,38 @@ impl<'a> Cpu<'a> {
     let result = (instructor.run)(inst, len, self);
     self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 });
     result
+  }
+
+  fn check_interrupt(&self) -> Option<Interrupt> {
+    let mie = self.csr.read_mie();
+    let mip = self.csr.read_mip();
+    fn check_mode(cpu: &Cpu, interrupt_mode: Mode) -> bool {
+      match (interrupt_mode, cpu.mode) {
+        (Mode::Machine, Mode::Machine) => cpu.csr.read_mstatus_mie(),
+        (Mode::Supervisor, Mode::Supervisor) => cpu.csr.read_mstatus_sie(),
+        (Mode::Machine, Mode::Supervisor) => true,
+        (Mode::Supervisor, Mode::Machine) => false,
+        _ => unreachable!(),
+      }
+    }
+    match (mie, mip) {
+      (MIEP { ms: true, .. }, MIEP { ms: true, .. })
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineSoftwareInterrupt),
+      (MIEP { mt: true, .. }, MIEP { mt: true, .. })
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineTimerInterrupt),
+      (MIEP { me: true, .. }, MIEP { me: true, .. })
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineExternalInterrupt),
+      (MIEP { ss: true, .. }, MIEP { ss: true, .. })
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorSoftwareInterrupt),
+      (MIEP { mt: true, .. }, MIEP { st: true, .. })
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorTimerInterrupt),
+      (MIEP { se: true, .. }, MIEP { se: true, .. })
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorExternalInterrupt),
+      _ => None,
+    }
+  }
+
+  fn handle_trap(&mut self, trap: Trap) {
+    
   }
 }
