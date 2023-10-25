@@ -87,7 +87,7 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
         let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm as u16, res & !rs1)?;
+        CsrRegistry::write(cpu, imm, res & !rs1)?;
         cpu.regs.set(rd, res);
         Ok(())
       },

@@ -6,7 +6,7 @@ pub(crate) enum Mode {
 }
 
 impl Mode {
-  pub(crate) fn into_u8(&self) -> u16 {
+  pub(crate) fn as_u8(&self) -> u16 {
     match self {
       Mode::User => 0b00,
       Mode::Supervisor => 0b01,
@@ -91,17 +91,17 @@ impl<'a> Cpu<'a> {
     }
     match (mie, mip) {
       (MIEP { ms: true, .. }, MIEP { ms: true, .. })
-        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineSoftwareInterrupt),
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineSoftware),
       (MIEP { mt: true, .. }, MIEP { mt: true, .. })
-        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineTimerInterrupt),
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineTimer),
       (MIEP { me: true, .. }, MIEP { me: true, .. })
-        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineExternalInterrupt),
+        if check_mode(self, Mode::Machine) => Some(Interrupt::MachineExternal),
       (MIEP { ss: true, .. }, MIEP { ss: true, .. })
-        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorSoftwareInterrupt),
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorSoftware),
       (MIEP { mt: true, .. }, MIEP { st: true, .. })
-        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorTimerInterrupt),
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorTimer),
       (MIEP { se: true, .. }, MIEP { se: true, .. })
-        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorExternalInterrupt),
+        if check_mode(self, Mode::Supervisor) => Some(Interrupt::SupervisorExternal),
       _ => None,
     }
   }

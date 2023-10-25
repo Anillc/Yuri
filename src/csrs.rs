@@ -60,12 +60,11 @@ pub(crate) struct MIEP {
 
 impl CsrRegistry {
   pub(crate) fn new() -> CsrRegistry {
-    let registry = CsrRegistry { csr: [0; 4096] };
-    registry
+    CsrRegistry { csr: [0; 4096] }
   }
 
   pub(crate) fn read(cpu: &Cpu, address: u16) -> Result<u64, Exception> {
-    if address >> 8 & 0b11 <= cpu.mode.into_u8() {
+    if address >> 8 & 0b11 <= cpu.mode.as_u8() {
       Ok(CsrRegistry::read_raw(&cpu.csr, address))
     } else {
       Err(Exception::IllegalInstruction)
@@ -77,8 +76,9 @@ impl CsrRegistry {
       // read only
       return Err(Exception::IllegalInstruction);
     }
-    if address >> 8 & 0b11 <= cpu.mode.into_u8() {
-      Ok(CsrRegistry::write_raw(&mut cpu.csr, address, data))
+    if address >> 8 & 0b11 <= cpu.mode.as_u8() {
+      CsrRegistry::write_raw(&mut cpu.csr, address, data);
+      Ok(())
     } else {
       Err(Exception::IllegalInstruction)
     }
@@ -142,14 +142,14 @@ impl CsrRegistry {
   pub(crate) fn trap_into_machine(&mut self, old: Mode) {
     let status = self.csr[MSTATUS as usize];
     self.csr[MSTATUS as usize] = (status & !TRAP_INTO_MACHINE_MASK) |
-      (((status >> 3) & 0b1) << 7) | ((old.into_u8() as u64) << 11);
+      (((status >> 3) & 0b1) << 7) | ((old.as_u8() as u64) << 11);
   }
 
   pub(crate) fn trap_into_supervisor(&mut self, old: Mode) {
     let status = self.csr[MSTATUS as usize];
-    debug_assert!(old.into_u8() <= 1);
+    debug_assert!(old.as_u8() <= 1);
     self.csr[MSTATUS as usize] = (status & !TRAP_INTO_SUPERVISOR_MASK) |
-      (((status >> 1) & 0b1) << 5) | ((old.into_u8() as u64) << 8);
+      (((status >> 1) & 0b1) << 5) | ((old.as_u8() as u64) << 8);
   }
 
   pub(crate) fn read_frm(&self) -> u8 {

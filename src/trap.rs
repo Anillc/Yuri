@@ -10,12 +10,12 @@ pub(crate) enum Exception {
 
 #[derive(Debug)]
 pub(crate) enum Interrupt {
-  SupervisorSoftwareInterrupt,
-  MachineSoftwareInterrupt,
-  SupervisorTimerInterrupt,
-  MachineTimerInterrupt,
-  SupervisorExternalInterrupt,
-  MachineExternalInterrupt,
+  SupervisorSoftware,
+  MachineSoftware,
+  SupervisorTimer,
+  MachineTimer,
+  SupervisorExternal,
+  MachineExternal,
 }
 
 #[derive(Debug)]
@@ -27,12 +27,12 @@ pub(crate) enum Trap {
 impl Trap {
   pub(crate) fn code(&self) -> u64 {
     match self {
-      Trap::Interrupt(Interrupt::SupervisorSoftwareInterrupt) => 1,
-      Trap::Interrupt(Interrupt::MachineSoftwareInterrupt) => 3,
-      Trap::Interrupt(Interrupt::SupervisorTimerInterrupt) => 5,
-      Trap::Interrupt(Interrupt::MachineTimerInterrupt) => 7,
-      Trap::Interrupt(Interrupt::SupervisorExternalInterrupt) => 9,
-      Trap::Interrupt(Interrupt::MachineExternalInterrupt) => 11,
+      Trap::Interrupt(Interrupt::SupervisorSoftware) => 1,
+      Trap::Interrupt(Interrupt::MachineSoftware) => 3,
+      Trap::Interrupt(Interrupt::SupervisorTimer) => 5,
+      Trap::Interrupt(Interrupt::MachineTimer) => 7,
+      Trap::Interrupt(Interrupt::SupervisorExternal) => 9,
+      Trap::Interrupt(Interrupt::MachineExternal) => 11,
       Trap::Exception(Exception::IllegalInstruction) => 2,
       Trap::Exception(Exception::Breakpoint(_)) => 3,
       Trap::Exception(Exception::LoadAddressMisaligned(_)) => 4,

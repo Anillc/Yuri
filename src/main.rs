@@ -14,7 +14,7 @@ mod csrs;
 mod utils;
 mod trap;
 
-fn run_program<'a>(path: &'a str) {
+fn run_program(path: &str) {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];
   let file = fs::read(path).unwrap();
   let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
@@ -45,7 +45,7 @@ fn main() {
     let name = file.file_name();
     let name = name.to_str().unwrap();
     for extension in ["i", "m", "a", "f", "d", "c"] {
-      if name.starts_with(&format!("rv64u{extension}-u-")) && !name.contains(".") {
+      if name.starts_with(&format!("rv64u{extension}-u-")) && !name.contains('.') {
         run_program(file.path().to_str().unwrap());
       }
     }
