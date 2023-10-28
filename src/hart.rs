@@ -24,8 +24,8 @@ impl Mode {
   }
 }
 
-pub struct Hart<'a> {
-  pub(crate) mem: Memory<'a>,
+pub struct Hart {
+  pub(crate) mem: Memory,
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
@@ -33,10 +33,10 @@ pub struct Hart<'a> {
   pub(crate) mode: Mode,
 }
 
-impl<'a> Hart<'a> {
-  pub fn new(mem: &'a mut [u8]) -> Hart<'a> {
+impl Hart {
+  pub fn new(mem: Memory) -> Hart {
     Hart {
-      mem: Memory::new(mem),
+      mem,
       regs: Registers::new(),
       fregs: FRegisters::new(),
       pc: 0,

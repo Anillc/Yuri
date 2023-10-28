@@ -1,77 +1,51 @@
-use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64}};
+use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64}, Arc};
 
-pub(crate) struct Memory<'a> {
-  mem: &'a mut [u8],
-  reservation: Mutex<Vec<u64>>,
+#[derive(Debug, Clone)]
+pub(crate) struct Memory {
+  mem: *mut u8,
+  reservation: Arc<Mutex<Vec<u64>>>,
+  _boxed: Arc<Mutex<Box<[u8]>>>,
 }
 
-impl<'a> Memory<'a> {
-  pub(crate) fn new(mem: &'a mut [u8]) -> Memory<'a> {
-    Memory { mem, reservation: Mutex::new(Vec::new()) }
+impl Memory {
+  pub(crate) fn new(mut boxed: Box<[u8]>) -> Memory {
+    Memory {
+      mem: &mut boxed[0],
+      reservation: Arc::new(Mutex::new(Vec::new())),
+      _boxed: Arc::new(Mutex::new(boxed)),
+    }
   }
 
   pub(crate) fn read8(&self, address: u64) -> u8 {
-    let address = address as usize;
-    self.mem[address]
+    unsafe { *(self.mem.wrapping_add(address as usize)) }
   }
 
   pub(crate) fn read16(&self, address: u64) -> u16 {
-    let address = address as usize;
-    self.mem[address] as u16 | (self.mem[address + 1] as u16) << 8
+    u16::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) })
   }
 
   pub(crate) fn read32(&self, address: u64) -> u32 {
-    let address = address as usize;
-    self.mem[address] as u32
-      | (self.mem[address + 1] as u32) << 8
-      | (self.mem[address + 2] as u32) << 16
-      | (self.mem[address + 3] as u32) << 24
+    u32::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) })
   }
 
   pub(crate) fn read64(&self, address: u64) -> u64 {
-    let address = address as usize;
-    self.mem[address] as u64
-      | (self.mem[address + 1] as u64) << 8
-      | (self.mem[address + 2] as u64) << 16
-      | (self.mem[address + 3] as u64) << 24
-      | (self.mem[address + 4] as u64) << 32
-      | (self.mem[address + 5] as u64) << 40
-      | (self.mem[address + 6] as u64) << 48
-      | (self.mem[address + 7] as u64) << 56
+    u64::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) })
   }
 
   pub(crate) fn write8(&mut self, address: u64, data: u8) {
-    let address = address as usize;
-    self.mem[address] = data;
+    unsafe { *(self.mem.wrapping_add(address as usize)) = data; };
   }
 
   pub(crate) fn write16(&mut self, address: u64, data: u16) {
-    let address = address as usize;
-    let bytes = u16::to_le_bytes(data);
-    self.mem[address] = bytes[0];
-    self.mem[address + 1] = bytes[1];
+    unsafe { *(self.mem.wrapping_add(address as usize) as *mut _) = data.to_le(); };
   }
 
   pub(crate) fn write32(&mut self, address: u64, data: u32) {
-    let address = address as usize;
-    let bytes = u32::to_le_bytes(data);
-    self.mem[address] = bytes[0];
-    self.mem[address + 1] = bytes[1];
-    self.mem[address + 2] = bytes[2];
-    self.mem[address + 3] = bytes[3];
+    unsafe { *(self.mem.wrapping_add(address as usize) as *mut _) = data.to_le(); };
   }
 
   pub(crate) fn write64(&mut self, address: u64, data: u64) {
-    let address = address as usize;
-    let bytes = u64::to_le_bytes(data);
-    self.mem[address] = bytes[0];
-    self.mem[address + 1] = bytes[1];
-    self.mem[address + 2] = bytes[2];
-    self.mem[address + 3] = bytes[3];
-    self.mem[address + 4] = bytes[4];
-    self.mem[address + 5] = bytes[5];
-    self.mem[address + 6] = bytes[6];
-    self.mem[address + 7] = bytes[7];
+    unsafe { *(self.mem.wrapping_add(address as usize) as *mut _) = data.to_le(); };
   }
 
   pub(crate) fn lock_addr(&mut self, address: u64) {
@@ -88,19 +62,19 @@ impl<'a> Memory<'a> {
   }
 
   pub(crate) fn ptr32(&mut self, address: u64) -> *mut u32 {
-    &mut self.mem[address as usize] as *mut _ as *mut u32
+    self.mem.wrapping_add(address as usize) as *mut u32
   }
 
   pub(crate) fn ptr64(&mut self, address: u64) -> *mut u64 {
-    &mut self.mem[address as usize] as *mut _ as *mut u64
+    self.mem.wrapping_add(address as usize) as *mut u64
   }
 
   pub(crate) fn ptr32i(&mut self, address: u64) -> *mut i32 {
-    &mut self.mem[address as usize] as *mut _ as *mut i32
+    self.mem.wrapping_add(address as usize) as *mut i32
   }
 
   pub(crate) fn ptr64i(&mut self, address: u64) -> *mut i64 {
-    &mut self.mem[address as usize] as *mut _ as *mut i64
+    self.mem.wrapping_add(address as usize) as *mut i64
   }
 
   pub(crate) fn atomic32(&mut self, address: u64) -> &AtomicU32 {

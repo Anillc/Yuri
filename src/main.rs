@@ -2,10 +2,10 @@
 #![feature(try_blocks)]
 use std::fs;
 
+use cpu::Cpu;
 use elf::{ElfBytes, endian::LittleEndian};
 
-use crate::hart::Hart;
-
+mod cpu;
 mod hart;
 mod register;
 mod memory;
@@ -25,11 +25,11 @@ fn run_program(path: &str) {
       mem[(segment.p_vaddr + i) as usize] = file[(segment.p_offset + i) as usize];
     }
   }
-  let mut hart = Hart::new(mem.as_mut());
-  hart.pc = elf.ehdr.e_entry;
-  hart.regs.set(2, 0x6f00);
+  let mut cpu = Cpu::new(mem.into_boxed_slice());
+  cpu.hart.pc = elf.ehdr.e_entry;
+  cpu.hart.regs.set(2, 0x6f00);
   loop {
-    let x = hart.step();
+    cpu.hart.step();
     // TODO: this is for test, remove it
     // match x {
     //   Ok(_) => {},
