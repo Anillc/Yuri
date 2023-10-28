@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::{cpu::Cpu, trap::Exception};
+use crate::{hart::Hart, trap::Exception};
 
 use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d};
 
@@ -39,7 +39,7 @@ pub(crate) struct Instructor {
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
-  pub(crate) run: fn(inst: u32, len: u64, cpu: &mut Cpu) -> Result<(), Exception>
+  pub(crate) run: fn(inst: u32, len: u64, hart: &mut Hart) -> Result<(), Exception>
 }
 
 impl Instructor {

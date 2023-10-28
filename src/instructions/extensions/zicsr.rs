@@ -8,13 +8,13 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRW",
       opcode: 0b1110011,
       segments: funct3(0b001),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm, cpu.regs[rs1])?;
-        cpu.regs.set(rd, res);
+        let res = CsrRegistry::read(hart, imm)?;
+        CsrRegistry::write(hart, imm, hart.regs[rs1])?;
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -23,13 +23,13 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRS",
       opcode: 0b1110011,
       segments: funct3(0b010),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm, res | cpu.regs[rs1])?;
-        cpu.regs.set(rd, res);
+        let res = CsrRegistry::read(hart, imm)?;
+        CsrRegistry::write(hart, imm, res | hart.regs[rs1])?;
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -38,13 +38,13 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRC",
       opcode: 0b1110011,
       segments: funct3(0b011),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm, res & !cpu.regs[rs1])?;
-        cpu.regs.set(rd, res);
+        let res = CsrRegistry::read(hart, imm)?;
+        CsrRegistry::write(hart, imm, res & !hart.regs[rs1])?;
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -53,12 +53,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRWI",
       opcode: 0b1110011,
       segments: funct3(0b101),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
-        cpu.regs.set(rd, CsrRegistry::read(cpu, imm)?);
-        CsrRegistry::write(cpu, imm, rs1)?;
+        hart.regs.set(rd, CsrRegistry::read(hart, imm)?);
+        CsrRegistry::write(hart, imm, rs1)?;
         Ok(())
       },
     },
@@ -67,13 +67,13 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRSI",
       opcode: 0b1110011,
       segments: funct3(0b110),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm, res | rs1)?;
-        cpu.regs.set(rd, res);
+        let res = CsrRegistry::read(hart, imm)?;
+        CsrRegistry::write(hart, imm, res | rs1)?;
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -82,13 +82,13 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       name: "CSRRCI",
       opcode: 0b1110011,
       segments: funct3(0b111),
-      run: |inst, _len, cpu| {
+      run: |inst, _len, hart| {
         let imm = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(cpu, imm)?;
-        CsrRegistry::write(cpu, imm, res & !rs1)?;
-        cpu.regs.set(rd, res);
+        let res = CsrRegistry::read(hart, imm)?;
+        CsrRegistry::write(hart, imm, res & !rs1)?;
+        hart.regs.set(rd, res);
         Ok(())
       },
     },

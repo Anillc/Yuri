@@ -8,7 +8,7 @@ pub(crate) fn zifenci() -> Vec<Instructor> {
       name: "FENCE.I",
       opcode: 0b0001111,
       segments: funct3(0b001),
-      run: |_inst, _len, _cpu| {
+      run: |_inst, _len, _hart| {
         // do nothing
         Ok(())
       },

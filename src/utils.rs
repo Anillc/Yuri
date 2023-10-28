@@ -1,6 +1,6 @@
 use softfloat_wrapper::{RoundingMode, Float, F32, ExceptionFlags};
 
-use crate::{cpu::Cpu, csrs::CsrRegistry, trap::Exception};
+use crate::{hart::Hart, csrs::CsrRegistry, trap::Exception};
 
 pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   let pos = origin & (1 << (length - 1)) == 0;
@@ -12,7 +12,7 @@ pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   }
 }
 
-pub(crate) fn round_mode(rm: u8, cpu: &Cpu) -> Result<RoundingMode, Exception> {
+pub(crate) fn round_mode(rm: u8, hart: &Hart) -> Result<RoundingMode, Exception> {
   match rm {
     0b000 => Ok(RoundingMode::TiesToEven),
     0b001 => Ok(RoundingMode::TowardZero),
@@ -21,10 +21,10 @@ pub(crate) fn round_mode(rm: u8, cpu: &Cpu) -> Result<RoundingMode, Exception> {
     0b100 => Ok(RoundingMode::TiesToAway),
     0b101 | 0b110 => Err(Exception::IllegalInstruction),
     0b111 => {
-      let rm = cpu.csr.read_frm();
+      let rm = hart.csr.read_frm();
       match rm {
         0b111 => Err(Exception::IllegalInstruction),
-        _ => round_mode(rm, cpu),
+        _ => round_mode(rm, hart),
       }
     },
     _ => unreachable!(),

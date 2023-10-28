@@ -4,15 +4,16 @@ use std::fs;
 
 use elf::{ElfBytes, endian::LittleEndian};
 
-use crate::cpu::Cpu;
+use crate::hart::Hart;
 
-mod cpu;
+mod hart;
 mod register;
 mod memory;
 mod instructions;
 mod csrs;
 mod utils;
 mod trap;
+mod devices;
 
 fn run_program(path: &str) {
   let mut mem: Vec<u8> = vec![0; 1024 * 1024 * 1024 * 4];
@@ -24,15 +25,15 @@ fn run_program(path: &str) {
       mem[(segment.p_vaddr + i) as usize] = file[(segment.p_offset + i) as usize];
     }
   }
-  let mut cpu = Cpu::new(mem.as_mut());
-  cpu.pc = elf.ehdr.e_entry;
-  cpu.regs.set(2, 0x6f00);
+  let mut hart = Hart::new(mem.as_mut());
+  hart.pc = elf.ehdr.e_entry;
+  hart.regs.set(2, 0x6f00);
   loop {
-    let x = cpu.step();
+    let x = hart.step();
     // TODO: this is for test, remove it
     // match x {
     //   Ok(_) => {},
-    //   Err(cpu::Exception::EnvironmentCallFromMMode) => break,
+    //   Err(hart::Exception::EnvironmentCallFromMMode) => break,
     //   other => other.unwrap(),
     // }
   };

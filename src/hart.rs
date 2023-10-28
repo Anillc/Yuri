@@ -24,7 +24,7 @@ impl Mode {
   }
 }
 
-pub struct Cpu<'a> {
+pub struct Hart<'a> {
   pub(crate) mem: Memory<'a>,
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
@@ -33,9 +33,9 @@ pub struct Cpu<'a> {
   pub(crate) mode: Mode,
 }
 
-impl<'a> Cpu<'a> {
-  pub fn new(mem: &'a mut [u8]) -> Cpu<'a> {
-    Cpu {
+impl<'a> Hart<'a> {
+  pub fn new(mem: &'a mut [u8]) -> Hart<'a> {
+    Hart {
       mem: Memory::new(mem),
       regs: Registers::new(),
       fregs: FRegisters::new(),
@@ -80,10 +80,10 @@ impl<'a> Cpu<'a> {
   fn check_interrupt(&self) -> Option<Interrupt> {
     let mie = self.csr.read_mie();
     let mip = self.csr.read_mip();
-    fn check_mode(cpu: &Cpu, interrupt_mode: Mode) -> bool {
-      match (interrupt_mode, cpu.mode) {
-        (Mode::Machine, Mode::Machine) => cpu.csr.read_mstatus_mie(),
-        (Mode::Supervisor, Mode::Supervisor) => cpu.csr.read_mstatus_sie(),
+    fn check_mode(hart: &Hart, interrupt_mode: Mode) -> bool {
+      match (interrupt_mode, hart.mode) {
+        (Mode::Machine, Mode::Machine) => hart.csr.read_mstatus_mie(),
+        (Mode::Supervisor, Mode::Supervisor) => hart.csr.read_mstatus_sie(),
         (Mode::Machine, Mode::Supervisor) => true,
         (Mode::Supervisor, Mode::Machine) => false,
         _ => unreachable!(),
