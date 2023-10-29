@@ -1,5 +1,5 @@
 // Machine-Mode and Supervisor-Mode Privileged Instructions
-use crate::instructions::{Instructor, InstructionSegment};
+use crate::{instructions::{Instructor, InstructionSegment}, hart::Mode, trap::Exception};
 
 pub(crate) fn sm() -> Vec<Instructor> {
   Vec::from([
@@ -10,6 +10,12 @@ pub(crate) fn sm() -> Vec<Instructor> {
         InstructionSegment { start: 7, end: 31, comp: 0b0001000000100000000000000 },
       ],
       run: |_inst, _len, hart| {
+        if hart.mode.as_u8() < Mode::Supervisor.as_u8() {
+          return Err(Exception::IllegalInstruction);
+        }
+        let (pc, mode) = hart.csr.sret();
+        hart.pc = pc;
+        hart.mode = mode;
         Ok(())
       }
     },
@@ -21,6 +27,12 @@ pub(crate) fn sm() -> Vec<Instructor> {
         InstructionSegment { start: 7, end: 31, comp: 0b0011000000100000000000000 },
       ],
       run: |_inst, _len, hart| {
+        if hart.mode.as_u8() < Mode::Machine.as_u8() {
+          return Err(Exception::IllegalInstruction);
+        }
+        let (pc, mode) = hart.csr.mret();
+        hart.pc = pc;
+        hart.mode = mode;
         Ok(())
       }
     },

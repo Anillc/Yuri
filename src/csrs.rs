@@ -43,6 +43,8 @@ const SIP_MASK: u64 = 0b0000001000100010;
 
 const TRAP_INTO_MACHINE_MASK: u64 = 0b0001100010001000;
 const TRAP_INTO_SUPERVISOR_MASK: u64 = 0b0000000100100010;
+const MRET_MASK: u64 = 0b100001100010001000;
+const SRET_MASK: u64 = 0b100000000100100010;
 
 pub(crate) struct CsrRegistry {
   pub(crate) csr: [u64; 4096],
@@ -142,6 +144,7 @@ impl CsrRegistry {
   pub(crate) fn trap_into_machine(&mut self, old: Mode) {
     let status = self.csr[MSTATUS as usize];
     self.csr[MSTATUS as usize] = (status & !TRAP_INTO_MACHINE_MASK) |
+    //   MPIE                          MPP
       (((status >> 3) & 0b1) << 7) | ((old.as_u8() as u64) << 11);
   }
 
@@ -149,7 +152,36 @@ impl CsrRegistry {
     let status = self.csr[MSTATUS as usize];
     debug_assert!(old.as_u8() <= 1);
     self.csr[MSTATUS as usize] = (status & !TRAP_INTO_SUPERVISOR_MASK) |
+    //   SPIE                          SPP
       (((status >> 1) & 0b1) << 5) | ((old.as_u8() as u64) << 8);
+  }
+
+  pub(crate) fn sret(&mut self) -> (u64, Mode) {
+    let status = self.csr[MSTATUS as usize];
+    let spie = (status >> 5) & 0b1;
+    let spp = Mode::from_u8(((status >> 8) & 0b1) as u8);
+    let mpriv = match spp {
+      Mode::Machine => (status >> 17) & 0b1,
+      _ => 0,
+    };
+    self.csr[MSTATUS as usize] = (status & !SRET_MASK) |
+    // SIE           SPIE       MPRIV         SPP(set to U which is 0)
+      (spie << 1) | (1 << 5) | (mpriv << 17);
+    (self.csr[MEPC as usize], spp)
+  }
+
+  pub(crate) fn mret(&mut self) -> (u64, Mode) {
+    let status = self.csr[MSTATUS as usize];
+    let mpie = (status >> 7) & 0b1;
+    let mpp = Mode::from_u8(((status >> 11) & 0b11) as u8);
+    let mpriv = match mpp {
+      Mode::Machine => (status >> 17) & 0b1,
+      _ => 0,
+    };
+    self.csr[MSTATUS as usize] = (status & !MRET_MASK) |
+    // MIE           MPIE       MPRIV         MPP(set to U which is 0)
+      (mpie << 3) | (1 << 7) | (mpriv << 17);
+    (self.csr[MEPC as usize], mpp)
   }
 
   pub(crate) fn read_frm(&self) -> u8 {

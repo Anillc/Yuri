@@ -14,16 +14,17 @@ impl Mode {
     }
   }
 
-  pub(crate) fn from_u8(num: u8) -> Option<Mode> {
+  pub(crate) fn from_u8(num: u8) -> Mode {
     match num {
-      0b00 => Some(Mode::User),
-      0b01 => Some(Mode::Supervisor),
-      0b11 => Some(Mode::Machine),
-      _ => None,
+      0b00 => Mode::User,
+      0b01 => Mode::Supervisor,
+      0b11 => Mode::Machine,
+      _ => unreachable!(),
     }
   }
 }
 
+// 0, 2, 4
 pub(crate) type InstructionLen = u64;
 
 pub struct Hart {
@@ -132,14 +133,14 @@ impl Hart {
     let vec = match mode {
       Mode::Machine => {
         self.csr.trap_into_machine(self.mode);
-        self.csr.write_mepc(self.pc);
+        self.csr.write_mepc(self.pc & !1);
         self.csr.write_mcause(cause);
         self.csr.write_mtval(trap_value);
         self.csr.read_mtvec()
       },
       Mode::Supervisor => {
         self.csr.trap_into_supervisor(self.mode);
-        self.csr.write_sepc(self.pc);
+        self.csr.write_sepc(self.pc & !1);
         self.csr.write_scause(cause);
         self.csr.write_stval(trap_value);
         self.csr.read_stvec()
