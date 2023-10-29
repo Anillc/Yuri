@@ -196,6 +196,11 @@ impl CsrRegistry {
     (status >> 3) & 0b1 == 1
   }
 
+  pub(crate) fn read_mstatus_tsr(&self) -> bool {
+    let status = self.csr[MSTATUS as usize];
+    (status >> 22) & 0b1 == 1
+  }
+
   pub(crate) fn read_mie(&self) -> MIEP {
     let mie = self.csr[MIE as usize];
     MIEP {
