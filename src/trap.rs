@@ -1,3 +1,5 @@
+use crate::hart::Mode;
+
 #[derive(Debug)]
 pub(crate) enum Exception {
   IllegalInstruction,
@@ -16,6 +18,19 @@ pub(crate) enum Interrupt {
   MachineTimer,
   SupervisorExternal,
   MachineExternal,
+}
+
+impl Interrupt {
+  pub(crate) fn mode(&self) -> Mode {
+    match self {
+      Interrupt::SupervisorSoftware => Mode::Supervisor,
+      Interrupt::MachineSoftware => Mode::Machine,
+      Interrupt::SupervisorTimer => Mode::Supervisor,
+      Interrupt::MachineTimer => Mode::Machine,
+      Interrupt::SupervisorExternal => Mode::Supervisor,
+      Interrupt::MachineExternal => Mode::Machine,
+    }
+  }
 }
 
 #[derive(Debug)]

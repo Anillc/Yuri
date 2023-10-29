@@ -13,6 +13,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
         if hart.mode.as_u8() < Mode::Supervisor.as_u8() {
           return Err(Exception::IllegalInstruction);
         }
+        // TODO: TSR
         let (pc, mode) = hart.csr.sret();
         hart.pc = pc;
         hart.mode = mode;

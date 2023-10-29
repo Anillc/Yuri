@@ -1,6 +1,6 @@
 use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum Mode {
   User, Supervisor, Machine,
 }
@@ -115,15 +115,35 @@ impl Hart {
 
   fn handle_trap(&mut self, trap: Trap) {
     let code = trap.code();
-    let (cause, delegation) = match trap {
-      Trap::Exception(_) => (code, self.csr.read_medeleg()),
-      Trap::Interrupt(_) => ((1 << 63) | code, self.csr.read_mideleg()),
-    };
-    // TODO: Traps never transition from a more-privileged mode to a less-privileged mode.
-    let mode = if (delegation >> code) & 0b1 == 0 {
-      Mode::Machine
-    } else {
-      Mode::Supervisor
+    let (cause, mode) = match trap {
+      Trap::Interrupt(ref interrupt) => {
+        let mode = match interrupt.mode() {
+          // Traps never transition from a more-privileged mode to a less-privileged mode.
+          Mode::Machine => if self.mode == Mode::Machine {
+            Mode::Machine
+          } else if (self.csr.read_medeleg() >> code) & 0b1 == 1 {
+            Mode::Supervisor
+          } else {
+            Mode::Machine
+          },
+          Mode::Supervisor => Mode::Supervisor,
+          Mode::User => unreachable!(),
+        };
+        ((1 << 63) | code, mode)
+      },
+      Trap::Exception(_) => {
+        let mode = match self.mode {
+          // Traps never transition from a more-privileged mode to a less-privileged mode.
+          Mode::Machine => Mode::Machine,
+          Mode::Supervisor => if (self.csr.read_mideleg() >> code) & 0b1 == 1 {
+            Mode::Supervisor
+          } else {
+            Mode::Machine
+          },
+          Mode::User => Mode::Supervisor,
+        };
+        (code, mode)
+      },
     };
     let trap_value = match trap {
         Trap::Exception(Exception::Breakpoint(value))
