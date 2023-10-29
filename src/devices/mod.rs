@@ -1,5 +1,7 @@
 use std::sync::atomic::Ordering;
 
+mod memory;
+
 #[macro_export]
 macro_rules! device_atomic {
   () => {
