@@ -4,8 +4,6 @@ use crate::{instructions::Instructor, utils::{round_mode, classify, Boxed, Float
 
 use super::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, RFP, funct_rfp_rs2, funct_rfp_rm, funct_rfp_rs2_rm};
 
-// TODO: FLW and FSW are only guaranteed to execute atomically if the effective address is naturally aligned.
-
 const NANBOX: u64 = ((-1i64) as u64) << 32;
 
 pub(crate) fn f() -> Vec<Instructor> {

@@ -32,9 +32,9 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: vec![],
       run: |inst, len, hart| {
         let J { imm, rd } = inst.j();
-        let res = hart.pc.wrapping_add(if len == 32 { 4 } else { 2 });
+        let res = hart.pc.wrapping_add(len);
         hart.pc = hart.pc.wrapping_add(imm as u64)
-          .wrapping_sub(if len == 32 { 4 } else { 2 });
+          .wrapping_sub(len);
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -46,9 +46,9 @@ pub(crate) fn i() -> Vec<Instructor> {
       segments: funct3(0b000),
       run: |inst, len, hart| {
         let I { imm, rs1, rd } = inst.i();
-        let res = hart.pc.wrapping_add(if len == 32 { 4 } else { 2 });
+        let res = hart.pc.wrapping_add(len);
         hart.pc = hart.regs[rs1].wrapping_add(imm as u64)
-          .wrapping_sub(if len == 32 { 4 } else { 2 });
+          .wrapping_sub(len);
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -62,7 +62,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] == hart.regs[rs2] {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -76,7 +76,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] != hart.regs[rs2] {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -90,7 +90,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if (hart.regs[rs1] as i64) < (hart.regs[rs2] as i64) {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -104,7 +104,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if (hart.regs[rs1] as i64) >= (hart.regs[rs2] as i64) {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -118,7 +118,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] < hart.regs[rs2] {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -132,7 +132,7 @@ pub(crate) fn i() -> Vec<Instructor> {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] >= hart.regs[rs2] {
           hart.pc = hart.pc.wrapping_add(imm as u64)
-            .wrapping_sub(if len == 32 { 4 } else { 2 });
+            .wrapping_sub(len);
         }
         Ok(())
       },
@@ -432,7 +432,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       name: "ECALL",
       opcode: 0b1110011,
       segments: vec![
-        InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 }
+        InstructionSegment { start: 7, end: 31, comp: 0b0000000000000000000000000 },
       ],
       run: |_inst, _len, hart| {
         Err(match hart.mode {
@@ -447,7 +447,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       name: "EBREAK",
       opcode: 0b1110011,
       segments: vec![
-        InstructionSegment { start: 7, end: 31, comp: 0b0000000000010000000000000 }
+        InstructionSegment { start: 7, end: 31, comp: 0b0000000000010000000000000 },
       ],
       run: |_inst, _len, hart| {
         Err(Exception::Breakpoint(hart.pc))

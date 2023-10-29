@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::{hart::Hart, trap::Exception};
+use crate::{hart::{Hart, InstructionLen}, trap::Exception};
 
-use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d};
+use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d, sm::sm};
 
 pub(crate) mod extensions;
 
@@ -19,6 +19,7 @@ static INSTRUCTORS: Lazy<HashMap<u8, Vec<(u32, u32, Instructor)>>> = Lazy::new(|
   instructors.extend(a());
   instructors.extend(f());
   instructors.extend(d());
+  instructors.extend(sm());
   for instructor in instructors {
     res.entry(instructor.opcode).or_default()
       .push((instructor.mask(), instructor.comp(), instructor));
@@ -39,7 +40,7 @@ pub(crate) struct Instructor {
   pub(crate) name: &'static str,
   pub(crate) opcode: u8,
   pub(crate) segments: Vec<InstructionSegment>,
-  pub(crate) run: fn(inst: u32, len: u64, hart: &mut Hart) -> Result<(), Exception>
+  pub(crate) run: fn(inst: u32, len: InstructionLen, hart: &mut Hart) -> Result<(), Exception>
 }
 
 impl Instructor {

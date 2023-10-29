@@ -9,6 +9,7 @@ pub(crate) mod a;
 pub(crate) mod f;
 pub(crate) mod d;
 pub(crate) mod c;
+pub(crate) mod sm;
 
 pub(crate) struct R {
   pub(crate) rs2: usize,
@@ -160,7 +161,7 @@ impl InstructionParser for u32 {
 
 pub(crate) fn funct3(funct3: u8) -> Vec<InstructionSegment> {
   vec![
-    InstructionSegment { start: 12, end: 14, comp: funct3 as u32 }
+    InstructionSegment { start: 12, end: 14, comp: funct3 as u32 },
   ]
 }
 

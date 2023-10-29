@@ -24,6 +24,8 @@ impl Mode {
   }
 }
 
+pub(crate) type InstructionLen = u64;
+
 pub struct Hart {
   pub(crate) mem: Memory,
   pub(crate) regs: Registers,
@@ -31,6 +33,7 @@ pub struct Hart {
   pub(crate) pc: u64,
   pub(crate) csr: CsrRegistry,
   pub(crate) mode: Mode,
+  pub(crate) wfi: bool,
 }
 
 impl Hart {
@@ -42,6 +45,7 @@ impl Hart {
       pc: 0,
       csr: CsrRegistry::new(),
       mode: Mode::Machine,
+      wfi: false,
     }
   }
 
@@ -51,23 +55,25 @@ impl Hart {
       self.handle_trap(Trap::Interrupt(interrupt));
     }
     match self.instruct() {
-      Ok(len) => self.pc = self.pc.wrapping_add(if len == 32 { 4 } else { 2 }),
+      Ok(len) => self.pc = self.pc.wrapping_add(len),
       Err(exception) => self.handle_trap(Trap::Exception(exception)),
     };
   }
 
-  //                               instruction length
-  fn instruct(&mut self) -> Result<u64, Exception> {
+  fn instruct(&mut self) -> Result<InstructionLen, Exception> {
+    if self.wfi {
+      return Ok(0);
+    }
     let inst = self.mem.read32(self.pc);
-    let parsed: Option<(&Instructor, u32, u64)> = try {
-      let (inst, add) = if inst & 0b11 == 0b11 {
+    let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
+      let (inst, len) = if inst & 0b11 == 0b11 {
         println!("{:x}", inst);
-        (inst, 32)
+        (inst, 4)
       } else {
         println!("{:x}", inst as u16);
-        (decompress((inst) as u16)?, 16)
+        (decompress((inst) as u16)?, 2)
       };
-      (parse(inst)?, inst, add)
+      (parse(inst)?, inst, len)
     };
     let (instructor, inst, len) = match parsed {
         Some(parsed) => parsed,
@@ -112,6 +118,7 @@ impl Hart {
       Trap::Exception(_) => (code, self.csr.read_medeleg()),
       Trap::Interrupt(_) => ((1 << 63) | code, self.csr.read_mideleg()),
     };
+    // TODO: Traps never transition from a more-privileged mode to a less-privileged mode.
     let mode = if (delegation >> code) & 0b1 == 0 {
       Mode::Machine
     } else {
