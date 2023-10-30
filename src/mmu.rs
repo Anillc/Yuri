@@ -29,7 +29,9 @@ struct VirtualAddress {
 impl VirtualAddress {
   pub(crate) fn from_u64(data: u64) -> VirtualAddress {
     VirtualAddress {
-      invalid: (data >> 39) != (((data >> 38) & 0b1) << 25) - 1,
+      invalid: (data >> 39) != if (data >> 38) & 0b1 == 1 {
+        0b1111111111111111111111111
+      } else { 0 },
       vpn: [
         (data >> 12) & 0b111111111,
         (data >> 21) & 0b111111111,
@@ -164,15 +166,15 @@ impl MMU {
       }
     }
 
-    if pte.a ||
-      ((access == AccessType::Write || access == AccessType::ReadWrite) && pte.d) {
+    if !pte.a ||
+      ((access == AccessType::Write || access == AccessType::ReadWrite) && !pte.d) {
         return fault(address, access);
     }
 
     let mut pa: u64 = 0;
     if i > 0 {
       for j in 0..i {
-        pa |= pte.ppns[j] << (12 + j * 9);
+        pa |= va.vpn[j] << (12 + j * 9);
       }
     }
     for j in i..LEVELS {

@@ -38,7 +38,7 @@ fn main() {
     let name = file.file_name();
     let name = name.to_str().unwrap();
     for extension in ["i", "m", "a", "f", "d", "c"] {
-      if name.starts_with(&format!("rv64u{extension}-u-")) && !name.contains('.') {
+      if name.starts_with(&format!("rv64u{extension}-v-")) && !name.contains('.') {
         run_program(file.path().to_str().unwrap());
       }
     }
