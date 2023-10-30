@@ -1,7 +1,7 @@
-use crate::{hart::Hart, devices::bus::Bus, mmu::MMU};
+use crate::{hart::Hart, devices::{bus::Bus, Device}, mmu::MMU};
 
 pub(crate) struct Cpu {
-  pub(crate) _bus: Bus,
+  pub(crate) bus: Bus,
   pub(crate) mmu: MMU,
   pub(crate) hart: Hart,
 }
@@ -12,14 +12,26 @@ impl Cpu {
     let mmu = MMU::new(bus.clone());
     Cpu {
       mmu,
-      _bus: bus.clone(),
+      bus: bus.clone(),
       hart: Hart::new(),
     }
   }
 
   pub(crate) fn run(&mut self) {
     loop {
-      self.hart.step(&mut self.mmu)
+      self.hart.step(&mut self.mmu);
+      let fromvm = self.bus.read64(0x0000000080001000);
+      if fromvm != 0 {
+        self.bus.write64(0x0000000080001000, 0);
+        if fromvm >> 32 == 0x01010000 {
+          print!("{}", char::from_u32(fromvm as u32).unwrap());
+        } else if fromvm == 1 {
+          println!("passed");
+          break;
+        } else {
+          println!("{:x}", fromvm);
+        }
+      }
     }
   }
 }

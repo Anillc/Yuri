@@ -13,9 +13,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         if rd != 0 {
-          hart.regs.set(rd, CsrRegistry::read(hart, imm)?);
+          let res = CsrRegistry::read(hart, imm)?;
+          CsrRegistry::write(hart, imm, hart.regs[rs1])?;
+          hart.regs.set(rd, res);
+        } else {
+          CsrRegistry::write(hart, imm, hart.regs[rs1])?;
         }
-        CsrRegistry::write(hart, imm, hart.regs[rs1])?;
         Ok(())
       },
     },
@@ -29,10 +32,10 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         let res = CsrRegistry::read(hart, imm)?;
-        hart.regs.set(rd, res);
         if rs1 != 0 {
           CsrRegistry::write(hart, imm, res | hart.regs[rs1])?;
         }
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -46,10 +49,10 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         let res = CsrRegistry::read(hart, imm)?;
-        hart.regs.set(rd, res);
         if rs1 != 0 {
           CsrRegistry::write(hart, imm, res & !hart.regs[rs1])?;
         }
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -63,9 +66,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
         if rd != 0 {
-          hart.regs.set(rd, CsrRegistry::read(hart, imm)?);
+          let res = CsrRegistry::read(hart, imm)?;
+          CsrRegistry::write(hart, imm, rs1)?;
+          hart.regs.set(rd, res);
+        } else {
+          CsrRegistry::write(hart, imm, rs1)?;
         }
-        CsrRegistry::write(hart, imm, rs1)?;
         Ok(())
       },
     },
@@ -79,10 +85,10 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
         let res = CsrRegistry::read(hart, imm)?;
-        hart.regs.set(rd, res);
         if imm != 0 {
           CsrRegistry::write(hart, imm, res | rs1)?;
         }
+        hart.regs.set(rd, res);
         Ok(())
       },
     },
@@ -96,10 +102,10 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
         let rs1 = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
         let res = CsrRegistry::read(hart, imm)?;
-        hart.regs.set(rd, res);
         if imm != 0 {
           CsrRegistry::write(hart, imm, res & !rs1)?;
         }
+        hart.regs.set(rd, res);
         Ok(())
       },
     },

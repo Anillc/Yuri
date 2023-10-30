@@ -66,10 +66,10 @@ impl Hart {
     let inst = mmu.fetch(self, self.pc)?;
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = if inst & 0b11 == 0b11 {
-        println!("{:x}", inst);
+        // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
         (inst, 4)
       } else {
-        println!("{:x}", inst as u16);
+        // println!("{:x}", inst as u16);
         (decompress((inst) as u16)?, 2)
       };
       (parse(inst)?, inst, len)

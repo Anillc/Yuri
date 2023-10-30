@@ -164,7 +164,7 @@ impl CsrRegistry {
     self.csr[MSTATUS as usize] = (status & !SRET_MASK) |
     // SIE           SPIE       MPRV         SPP(set to U which is 0)
       (spie << 1) | (1 << 5) | (mprv << 17);
-    (self.csr[MEPC as usize], spp)
+    (self.csr[SEPC as usize], spp)
   }
 
   pub(crate) fn mret(&mut self) -> (u64, Mode) {

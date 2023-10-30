@@ -9,7 +9,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0001000000100000000000000 },
       ],
-      run: |_inst, _len, _mmu, hart| {
+      run: |_inst, len, _mmu, hart| {
         if hart.mode.as_u8() < Mode::Supervisor.as_u8() {
           return Err(Exception::IllegalInstruction);
         }
@@ -17,7 +17,8 @@ pub(crate) fn sm() -> Vec<Instructor> {
           return Err(Exception::IllegalInstruction);
         }
         let (pc, mode) = hart.csr.sret();
-        hart.pc = pc;
+        // hart.step will add instruction len
+        hart.pc = pc.wrapping_sub(len);
         hart.mode = mode;
         Ok(())
       }
@@ -29,12 +30,13 @@ pub(crate) fn sm() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0011000000100000000000000 },
       ],
-      run: |_inst, _len, _mmu, hart| {
+      run: |_inst, len, _mmu, hart| {
         if hart.mode.as_u8() < Mode::Machine.as_u8() {
           return Err(Exception::IllegalInstruction);
         }
         let (pc, mode) = hart.csr.mret();
-        hart.pc = pc;
+        // hart.step will add instruction len
+        hart.pc = pc.wrapping_sub(len);
         hart.mode = mode;
         Ok(())
       }
