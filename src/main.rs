@@ -28,14 +28,7 @@ fn run_program(path: &str) {
   let mut cpu = Cpu::new(mem.into_boxed_slice());
   cpu.hart.pc = elf.ehdr.e_entry;
   cpu.hart.regs.set(2, 0x6f00);
-  cpu.hart.run();
-  // cpu.hart.step();
-  // TODO: this is for test, remove it
-  // match x {
-  //   Ok(_) => {},
-  //   Err(hart::Exception::EnvironmentCallFromMMode) => break,
-  //   other => other.unwrap(),
-  // }
+  cpu.run();
 }
 
 fn main() {

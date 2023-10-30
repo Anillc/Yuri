@@ -28,7 +28,6 @@ impl Mode {
 pub(crate) type InstructionLen = u64;
 
 pub struct Hart {
-  pub(crate) mmu: MMU,
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
@@ -38,9 +37,8 @@ pub struct Hart {
 }
 
 impl Hart {
-  pub fn new(mmu: MMU) -> Hart {
+  pub fn new() -> Hart {
     Hart {
-      mmu,
       regs: Registers::new(),
       fregs: FRegisters::new(),
       pc: 0,
@@ -50,14 +48,7 @@ impl Hart {
     }
   }
 
-  pub(crate) fn run(&mut self) {
-    let mut mmu = self.mmu.clone();
-    loop {
-      self.step(&mut mmu);
-    }
-  }
-
-  fn step(&mut self, mmu: &mut MMU) {
+  pub(crate) fn step(&mut self, mmu: &mut MMU) {
     let interrupt = self.check_interrupt();
     if let Some(interrupt) = interrupt {
       self.handle_trap(Trap::Interrupt(interrupt));
