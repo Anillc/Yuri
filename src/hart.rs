@@ -1,6 +1,6 @@
 use crate::{register::{Registers, FRegisters}, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}, mmu::MMU};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Mode {
   User, Supervisor, Machine,
 }
@@ -72,7 +72,7 @@ impl Hart {
     if self.wfi {
       return Ok(0);
     }
-    let inst = mmu.read32(self, self.pc);
+    let inst = mmu.fetch(self, self.pc)?;
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = if inst & 0b11 == 0b11 {
         println!("{:x}", inst);
@@ -154,7 +154,10 @@ impl Hart {
     };
     let trap_value = match trap {
         Trap::Exception(Exception::Breakpoint(value))
-      | Trap::Exception(Exception::LoadAddressMisaligned(value)) => value,
+      | Trap::Exception(Exception::LoadAddressMisaligned(value))
+      | Trap::Exception(Exception::InstructionPageFault(value))
+      | Trap::Exception(Exception::LoadPageFault(value))
+      | Trap::Exception(Exception::StoreAMOPageFault(value)) => value,
       _ => 0,
     };
     let vec = match mode {

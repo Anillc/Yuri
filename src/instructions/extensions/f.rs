@@ -15,7 +15,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        hart.fregs.set(rd, mmu.read32(hart, address) as u64 | NANBOX);
+        hart.fregs.set(rd, mmu.read32(hart, address)? as u64 | NANBOX);
         Ok(())
       },
     },
@@ -27,7 +27,7 @@ pub(crate) fn f() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        mmu.write32(hart, address, hart.fregs[rs2] as u32);
+        mmu.write32(hart, address, hart.fregs[rs2] as u32)?;
         Ok(())
       },
     },

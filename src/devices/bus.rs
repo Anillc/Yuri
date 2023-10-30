@@ -13,9 +13,11 @@ impl Bus {
       memory: Memory::new(mem),
     }
   }
+  #[inline]
   fn device(&self, _address: u64) -> &dyn Device {
     &self.memory
   }
+  #[inline]
   fn device_mut(&mut self, _address: u64) -> &mut dyn Device {
     &mut self.memory
   }

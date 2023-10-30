@@ -14,7 +14,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { rs1, rd, .. } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let data = mmu.read32(hart, address) as i32 as i64 as u64;
+        let data = mmu.read32(hart, address)? as i32 as i64 as u64;
         hart.regs.set(rd, data);
         mmu.lock_addr(address);
         Ok(())
@@ -30,7 +30,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let address = hart.regs[rs1];
         align32(address)?;
         if mmu.unlock_addr(address) {
-          mmu.write32(hart, address, hart.regs[rs2] as u32);
+          mmu.write32(hart, address, hart.regs[rs2] as u32)?;
           hart.regs.set(rd, 0);
         } else {
           hart.regs.set(rd, 1);
@@ -47,7 +47,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_swap32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_swap32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -61,7 +61,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_add32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_add32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -75,7 +75,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_xor32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_xor32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -89,7 +89,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_and32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_and32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -103,7 +103,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_or32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_or32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -117,7 +117,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_min_i32(hart, address, hart.regs[rs2] as i32, ordering(aq, rl));
+        let res = mmu.atomic_min_i32(hart, address, hart.regs[rs2] as i32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -131,7 +131,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_max_i32(hart, address, hart.regs[rs2] as i32, ordering(aq, rl));
+        let res = mmu.atomic_max_i32(hart, address, hart.regs[rs2] as i32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -145,7 +145,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_min_u32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_min_u32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -159,7 +159,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align32(address)?;
-        let res = mmu.atomic_max_u32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl));
+        let res = mmu.atomic_max_u32(hart, address, hart.regs[rs2] as u32, ordering(aq, rl))?;
         hart.regs.set(rd, res as i32 as i64 as u64);
         Ok(())
       },
@@ -173,7 +173,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { rs1, rd, .. } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let data = mmu.read64(hart, address);
+        let data = mmu.read64(hart, address)?;
         hart.regs.set(rd, data);
         mmu.lock_addr(address);
         Ok(())
@@ -189,7 +189,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let address = hart.regs[rs1];
         align64(address)?;
         if mmu.unlock_addr(address) {
-          mmu.write64(hart, address, hart.regs[rs2]);
+          mmu.write64(hart, address, hart.regs[rs2])?;
           hart.regs.set(rd, 0);
         } else {
           hart.regs.set(rd, 1);
@@ -206,7 +206,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_swap64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_swap64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -220,7 +220,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_add64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_add64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -234,7 +234,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_xor64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_xor64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -248,7 +248,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_and64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_and64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -262,7 +262,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_or64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_or64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -276,7 +276,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_min_i64(hart, address, hart.regs[rs2] as i64, ordering(aq, rl));
+        let res = mmu.atomic_min_i64(hart, address, hart.regs[rs2] as i64, ordering(aq, rl))?;
         hart.regs.set(rd, res as u64);
         Ok(())
       },
@@ -290,7 +290,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_max_i64(hart, address, hart.regs[rs2] as i64, ordering(aq, rl));
+        let res = mmu.atomic_max_i64(hart, address, hart.regs[rs2] as i64, ordering(aq, rl))?;
         hart.regs.set(rd, res as u64);
         Ok(())
       },
@@ -304,7 +304,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_min_u64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_min_u64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },
@@ -318,7 +318,7 @@ pub(crate) fn a() -> Vec<Instructor> {
         let RA { aq, rl, rs2, rs1, rd } = inst.ra();
         let address = hart.regs[rs1];
         align64(address)?;
-        let res = mmu.atomic_max_u64(hart, address, hart.regs[rs2], ordering(aq, rl));
+        let res = mmu.atomic_max_u64(hart, address, hart.regs[rs2], ordering(aq, rl))?;
         hart.regs.set(rd, res);
         Ok(())
       },

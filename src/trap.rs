@@ -8,6 +8,10 @@ pub(crate) enum Exception {
   EnvironmentCallFromUMode,
   EnvironmentCallFromSMode,
   EnvironmentCallFromMMode,
+  InstructionPageFault(u64),
+  LoadPageFault(u64),
+  StoreAMOPageFault(u64),
+
 }
 
 #[derive(Debug)]
@@ -54,6 +58,9 @@ impl Trap {
       Trap::Exception(Exception::EnvironmentCallFromUMode) => 8,
       Trap::Exception(Exception::EnvironmentCallFromSMode) => 9,
       Trap::Exception(Exception::EnvironmentCallFromMMode) => 11,
+      Trap::Exception(Exception::InstructionPageFault(_)) => 12,
+      Trap::Exception(Exception::LoadPageFault(_)) => 13,
+      Trap::Exception(Exception::StoreAMOPageFault(_)) => 15,
     }
   }
 }

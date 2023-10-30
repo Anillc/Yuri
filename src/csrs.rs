@@ -201,6 +201,14 @@ impl CsrRegistry {
     (status >> 22) & 0b1 == 1
   }
 
+  pub(crate) fn read_mstatus_mprv_mpp_sum_mxr(&self) -> (bool, Mode, bool, bool) {
+    let status = self.csr[MSTATUS as usize];
+    ((status >> 17) & 0b1 == 1,
+      Mode::from_u8(((status >> 11) & 0b11) as u8),
+      (status >> 18) & 0b1 == 1,
+      (status >> 19) & 0b1 == 1)
+  }
+
   pub(crate) fn read_mie(&self) -> MIEP {
     let mie = self.csr[MIE as usize];
     MIEP {
@@ -237,31 +245,35 @@ impl CsrRegistry {
     self.csr[MEPC as usize] = data;
   }
 
-  pub(crate) fn write_sepc(&mut self, data: u64) {
-    self.csr[SEPC as usize] = data;
-  }
-
   pub(crate) fn write_mcause(&mut self, data: u64) {
     self.csr[MCAUSE as usize] = data;
-  }
-
-  pub(crate) fn write_scause(&mut self, data: u64) {
-    self.csr[SCAUSE as usize] = data;
   }
 
   pub(crate) fn write_mtval(&mut self, data: u64) {
     self.csr[MTVAL as usize] = data;
   }
 
-  pub(crate) fn write_stval(&mut self, data: u64) {
-    self.csr[STVAL as usize] = data;
-  }
-
   pub(crate) fn read_mtvec(&mut self) -> u64 {
     self.csr[MTVEC as usize]
   }
 
+  pub(crate) fn write_sepc(&mut self, data: u64) {
+    self.csr[SEPC as usize] = data;
+  }
+
+  pub(crate) fn write_scause(&mut self, data: u64) {
+    self.csr[SCAUSE as usize] = data;
+  }
+
+  pub(crate) fn write_stval(&mut self, data: u64) {
+    self.csr[STVAL as usize] = data;
+  }
+
   pub(crate) fn read_stvec(&mut self) -> u64 {
     self.csr[STVEC as usize]
+  }
+
+  pub(crate) fn read_satp(&self) -> u64 {
+    self.csr[SATP as usize]
   }
 }

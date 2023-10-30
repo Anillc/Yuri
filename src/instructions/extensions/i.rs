@@ -145,7 +145,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read8(hart, address) as i8 as i64 as u64;
+        let data = mmu.read8(hart, address)? as i8 as i64 as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -158,7 +158,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read16(hart, address) as i16 as i64 as u64;
+        let data = mmu.read16(hart, address)? as i16 as i64 as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -171,7 +171,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read32(hart, address) as i32 as i64 as u64;
+        let data = mmu.read32(hart, address)? as i32 as i64 as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -184,7 +184,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read8(hart, address) as u64;
+        let data = mmu.read8(hart, address)? as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -197,7 +197,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read16(hart, address) as u64;
+        let data = mmu.read16(hart, address)? as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -210,7 +210,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        mmu.write8(hart, address, hart.regs[rs2] as u8);
+        mmu.write8(hart, address, hart.regs[rs2] as u8)?;
         Ok(())
       },
     },
@@ -222,7 +222,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        mmu.write16(hart, address, hart.regs[rs2] as u16);
+        mmu.write16(hart, address, hart.regs[rs2] as u16)?;
         Ok(())
       },
     },
@@ -234,7 +234,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        mmu.write32(hart, address, hart.regs[rs2] as u32);
+        mmu.write32(hart, address, hart.regs[rs2] as u32)?;
         Ok(())
       },
     },
@@ -461,7 +461,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read32(hart, address) as u64;
+        let data = mmu.read32(hart, address)? as u64;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -474,7 +474,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        let data = mmu.read64(hart, address);
+        let data = mmu.read64(hart, address)?;
         hart.regs.set(rd, data);
         Ok(())
       },
@@ -487,7 +487,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        mmu.write64(hart, address, hart.regs[rs2]);
+        mmu.write64(hart, address, hart.regs[rs2])?;
         Ok(())
       },
     },
