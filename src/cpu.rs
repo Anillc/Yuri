@@ -1,16 +1,17 @@
-use crate::{hart::Hart, memory::Memory};
+use crate::{hart::Hart, devices::bus::Bus, mmu::MMU};
 
 pub(crate) struct Cpu {
-  pub(crate) mem: Memory,
+  pub(crate) _bus: Bus,
   pub(crate) hart: Hart,
 }
 
 impl Cpu {
   pub(crate) fn new(mem: Box<[u8]>) -> Cpu {
-    let mem = Memory::new(mem);
+    let bus = Bus::new(mem);
+    let mmu = MMU::new(bus.clone());
     Cpu {
-      mem: mem.clone(),
-      hart: Hart::new(mem),
+      _bus: bus.clone(),
+      hart: Hart::new(mmu),
     }
   }
 }

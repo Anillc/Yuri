@@ -8,7 +8,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "MUL",
       opcode: 0b0110011,
       segments: funct37(0b000, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         hart.regs.set(rd, (hart.regs[rs1] as i64).wrapping_mul(hart.regs[rs2] as i64) as u64);
         Ok(())
@@ -19,7 +19,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "MULH",
       opcode: 0b0110011,
       segments: funct37(0b001, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         hart.regs.set(rd, ((hart.regs[rs1] as i64 as i128)
           .wrapping_mul(hart.regs[rs2] as i64 as i128) >> 64) as u64);
@@ -31,7 +31,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "MULHSU",
       opcode: 0b0110011,
       segments: funct37(0b010, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         hart.regs.set(rd, ((hart.regs[rs1] as i64 as i128 as u128)
           .wrapping_mul(hart.regs[rs2] as u128) >> 64) as u64);
@@ -43,7 +43,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "MULHU",
       opcode: 0b0110011,
       segments: funct37(0b011, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         hart.regs.set(rd, ((hart.regs[rs1] as u128)
           .wrapping_mul(hart.regs[rs2] as u128) >> 64) as u64);
@@ -55,7 +55,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "DIV",
       opcode: 0b0110011,
       segments: funct37(0b100, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as i64;
         let divisor = hart.regs[rs2] as i64;
@@ -75,7 +75,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "DIVU",
       opcode: 0b0110011,
       segments: funct37(0b101, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1];
         let divisor = hart.regs[rs2];
@@ -93,7 +93,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "REM",
       opcode: 0b0110011,
       segments: funct37(0b110, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as i64;
         let divisor = hart.regs[rs2] as i64;
@@ -113,7 +113,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "REMU",
       opcode: 0b0110011,
       segments: funct37(0b111, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1];
         let divisor = hart.regs[rs2];
@@ -131,7 +131,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "MULW",
       opcode: 0b0111011,
       segments: funct37(0b000, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         hart.regs.set(rd, (hart.regs[rs1] as i64 as i32).wrapping_mul(hart.regs[rs2] as i64 as i32) as u64);
         Ok(())
@@ -142,7 +142,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "DIVW",
       opcode: 0b0111011,
       segments: funct37(0b100, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as i32;
         let divisor = hart.regs[rs2] as i32;
@@ -162,7 +162,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "DIVUW",
       opcode: 0b0111011,
       segments: funct37(0b101, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as u32;
         let divisor = hart.regs[rs2] as u32;
@@ -180,7 +180,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "REMW",
       opcode: 0b0111011,
       segments: funct37(0b110, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as i32;
         let divisor = hart.regs[rs2] as i32;
@@ -200,7 +200,7 @@ pub(crate) fn m() -> Vec<Instructor> {
       name: "REMUW",
       opcode: 0b0111011,
       segments: funct37(0b111, 0b0000001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let R { rs2, rs1, rd } = inst.r();
         let dividend = hart.regs[rs1] as u32;
         let divisor = hart.regs[rs2] as u32;

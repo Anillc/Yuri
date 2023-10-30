@@ -1,96 +1,98 @@
 use std::sync::atomic::Ordering;
 
-mod memory;
+pub(crate) mod memory;
+pub(crate) mod bus;
 
 #[macro_export]
 macro_rules! device_atomic {
   () => {
-    fn atomic_swap32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    use std::sync::atomic::Ordering;
+    fn atomic_swap32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, val);
       origin
     }
-    fn atomic_swap64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_swap64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, val);
       origin
     }
-    fn atomic_add32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_add32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, origin.wrapping_add(val));
       origin
     }
-    fn atomic_add64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_add64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, origin.wrapping_add(val));
       origin
     }
-    fn atomic_xor32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_xor32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, origin ^ val);
       origin
     }
-    fn atomic_xor64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_xor64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, origin ^ val);
       origin
     }
-    fn atomic_and32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_and32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, origin & val);
       origin
     }
-    fn atomic_and64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_and64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, origin & val);
       origin
     }
-    fn atomic_or32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_or32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, origin | val);
       origin
     }
-    fn atomic_or64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_or64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, origin | val);
       origin
     }
-    fn atomic_min_i32(&mut self, address:u64, val: i32, _: std::sync::atomic::Ordering) -> i32 {
+    fn atomic_min_i32(&mut self, address:u64, val: i32, _: Ordering) -> i32 {
       let origin = self.read32(address) as i32;
       self.write32(address, if origin < val { origin } else { val } as u32);
       origin
     }
-    fn atomic_min_i64(&mut self, address:u64, val: i64, _: std::sync::atomic::Ordering) -> i64 {
+    fn atomic_min_i64(&mut self, address:u64, val: i64, _: Ordering) -> i64 {
       let origin = self.read64(address) as i64;
       self.write64(address, if origin < val { origin } else { val } as u64);
       origin
     }
-    fn atomic_max_i32(&mut self, address:u64, val: i32, _: std::sync::atomic::Ordering) -> i32 {
+    fn atomic_max_i32(&mut self, address:u64, val: i32, _: Ordering) -> i32 {
       let origin = self.read32(address) as i32;
       self.write32(address, if origin > val { origin } else { val } as u32);
       origin
     }
-    fn atomic_max_i64(&mut self, address:u64, val: i64, _: std::sync::atomic::Ordering) -> i64 {
+    fn atomic_max_i64(&mut self, address:u64, val: i64, _: Ordering) -> i64 {
       let origin = self.read64(address) as i64;
       self.write64(address, if origin > val { origin } else { val } as u64);
       origin
     }
-    fn atomic_min_u32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_min_u32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, if origin < val { origin } else { val });
       origin
     }
-    fn atomic_min_u64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_min_u64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, if origin < val { origin } else { val });
       origin
     }
-    fn atomic_max_u32(&mut self, address:u64, val: u32, _: std::sync::atomic::Ordering) -> u32 {
+    fn atomic_max_u32(&mut self, address:u64, val: u32, _: Ordering) -> u32 {
       let origin = self.read32(address);
       self.write32(address, if origin > val { origin } else { val });
       origin
     }
-    fn atomic_max_u64(&mut self, address:u64, val: u64, _: std::sync::atomic::Ordering) -> u64 {
+    fn atomic_max_u64(&mut self, address:u64, val: u64, _: Ordering) -> u64 {
       let origin = self.read64(address);
       self.write64(address, if origin > val { origin } else { val });
       origin

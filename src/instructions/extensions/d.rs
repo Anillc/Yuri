@@ -12,10 +12,10 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FLD",
       opcode: 0b0000111,
       segments: funct3(0b011),
-      run: |inst, _len, hart| {
+      run: |inst, _len, mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        hart.fregs.set(rd, hart.mem.read64(address));
+        hart.fregs.set(rd, mmu.read64(hart, address));
         Ok(())
       },
     },
@@ -24,10 +24,10 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSD",
       opcode: 0b0100111,
       segments: funct3(0b011),
-      run: |inst, _len, hart| {
+      run: |inst, _len, mmu, hart| {
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
-        hart.mem.write64(address, hart.fregs[rs2]);
+        mmu.write64(hart, address, hart.fregs[rs2]);
         Ok(())
       },
     },
@@ -36,7 +36,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMADD.D",
       opcode: 0b1000011,
       segments: funct_rfp_rs3(0b01),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -53,7 +53,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMSUB.D",
       opcode: 0b1000111,
       segments: funct_rfp_rs3(0b01),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -70,7 +70,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FNMSUB.D",
       opcode: 0b1001011,
       segments: funct_rfp_rs3(0b01),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -87,7 +87,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FNMADD.D",
       opcode: 0b1001111,
       segments: funct_rfp_rs3(0b01),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -104,7 +104,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FADD.D",
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -120,7 +120,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSUB.D",
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00001),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -136,7 +136,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMUL.D",
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00010),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -152,7 +152,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FDIV.D",
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00011),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -168,7 +168,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSQRT.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b01011),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -183,7 +183,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSGNJ.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b00100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -197,7 +197,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSGNJN.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b00100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -211,7 +211,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FSGNJX.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b010, 0b01, 0b00100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -225,7 +225,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMIN.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b00101),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -248,7 +248,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMAX.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b00101),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -271,7 +271,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.S.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b00, 0b01000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -286,7 +286,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.D.S",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b01000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -301,7 +301,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FEQ.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b010, 0b01, 0b10100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -316,7 +316,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FLT.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b10100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -331,7 +331,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FLE.D",
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b10100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -346,7 +346,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCLASS.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b001, 0b00000, 0b01, 0b11100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         let num = F64::from_bits(hart.fregs[rs1]);
         hart.regs.set(rd, classify(num));
@@ -358,7 +358,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.W.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b11000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -373,7 +373,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.WU.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b01, 0b11000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -388,7 +388,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.D.W",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b11010),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -403,7 +403,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.D.WU",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b01, 0b11010),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -418,7 +418,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.L.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00010, 0b01, 0b11000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -433,7 +433,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.LU.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00011, 0b01, 0b11000),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -448,7 +448,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMV.X.D",
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b000, 0b00000, 0b01, 0b11100),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         hart.regs.set(rd, hart.fregs[rs1]);
         Ok(())
@@ -459,7 +459,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.D.L",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00010, 0b01, 0b11010),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -474,7 +474,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FCVT.D.LU",
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00011, 0b01, 0b11010),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -489,7 +489,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       name: "FMV.D.X",
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b000, 0b00000, 0b01, 0b11110),
-      run: |inst, _len, hart| {
+      run: |inst, _len, _mmu, hart| {
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         hart.fregs.set(rd, hart.regs[rs1]);
         Ok(())

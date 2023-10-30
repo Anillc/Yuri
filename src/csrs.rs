@@ -160,10 +160,10 @@ impl CsrRegistry {
     let status = self.csr[MSTATUS as usize];
     let spie = (status >> 5) & 0b1;
     let spp = Mode::from_u8(((status >> 8) & 0b1) as u8);
-    let mpriv = if spp == Mode::Machine { (status >> 17) & 0b1 } else { 0 };
+    let mprv = if spp == Mode::Machine { (status >> 17) & 0b1 } else { 0 };
     self.csr[MSTATUS as usize] = (status & !SRET_MASK) |
-    // SIE           SPIE       MPRIV         SPP(set to U which is 0)
-      (spie << 1) | (1 << 5) | (mpriv << 17);
+    // SIE           SPIE       MPRV         SPP(set to U which is 0)
+      (spie << 1) | (1 << 5) | (mprv << 17);
     (self.csr[MEPC as usize], spp)
   }
 
@@ -171,10 +171,10 @@ impl CsrRegistry {
     let status = self.csr[MSTATUS as usize];
     let mpie = (status >> 7) & 0b1;
     let mpp = Mode::from_u8(((status >> 11) & 0b11) as u8);
-    let mpriv = if mpp == Mode::Machine { (status >> 17) & 0b1 } else { 0 };
+    let mprv = if mpp == Mode::Machine { (status >> 17) & 0b1 } else { 0 };
     self.csr[MSTATUS as usize] = (status & !MRET_MASK) |
-    // MIE           MPIE       MPRIV         MPP(set to U which is 0)
-      (mpie << 3) | (1 << 7) | (mpriv << 17);
+    // MIE           MPIE       MPRV         MPP(set to U which is 0)
+      (mpie << 3) | (1 << 7) | (mprv << 17);
     (self.csr[MEPC as usize], mpp)
   }
 

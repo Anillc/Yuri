@@ -5,7 +5,6 @@ use super::Device;
 #[derive(Debug, Clone)]
 pub(crate) struct Memory {
   mem: *mut u8,
-  reservation: Arc<Mutex<Vec<u64>>>,
   _boxed: Arc<Mutex<Box<[u8]>>>,
 }
 
@@ -13,22 +12,8 @@ impl Memory {
   pub(crate) fn new(mut boxed: Box<[u8]>) -> Memory {
     Memory {
       mem: &mut boxed[0],
-      reservation: Arc::new(Mutex::new(Vec::new())),
       _boxed: Arc::new(Mutex::new(boxed)),
     }
-  }
-
-  pub(crate) fn lock_addr(&mut self, address: u64) {
-    self.reservation.lock().unwrap().push(address);
-  }
-
-  // true -> exist
-  // false -> non-exist
-  pub(crate) fn unlock_addr(&mut self, address: u64) -> bool {
-    let mut reservation = self.reservation.lock().unwrap();
-    let res = reservation.contains(&address);
-    reservation.clear();
-    res
   }
 
   fn atomic_u32(&mut self, address: u64) -> &AtomicU32 {

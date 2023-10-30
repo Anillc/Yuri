@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, memory::Memory, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}};
+use crate::{register::{Registers, FRegisters}, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}, mmu::MMU};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum Mode {
@@ -28,7 +28,7 @@ impl Mode {
 pub(crate) type InstructionLen = u64;
 
 pub struct Hart {
-  pub(crate) mem: Memory,
+  pub(crate) mmu: MMU,
   pub(crate) regs: Registers,
   pub(crate) fregs: FRegisters,
   pub(crate) pc: u64,
@@ -38,9 +38,9 @@ pub struct Hart {
 }
 
 impl Hart {
-  pub fn new(mem: Memory) -> Hart {
+  pub fn new(mmu: MMU) -> Hart {
     Hart {
-      mem,
+      mmu,
       regs: Registers::new(),
       fregs: FRegisters::new(),
       pc: 0,
@@ -50,22 +50,29 @@ impl Hart {
     }
   }
 
-  pub(crate) fn step(&mut self) {
+  pub(crate) fn run(&mut self) {
+    let mut mmu = self.mmu.clone();
+    loop {
+      self.step(&mut mmu);
+    }
+  }
+
+  fn step(&mut self, mmu: &mut MMU) {
     let interrupt = self.check_interrupt();
     if let Some(interrupt) = interrupt {
       self.handle_trap(Trap::Interrupt(interrupt));
     }
-    match self.instruct() {
+    match self.instruct(mmu) {
       Ok(len) => self.pc = self.pc.wrapping_add(len),
       Err(exception) => self.handle_trap(Trap::Exception(exception)),
     };
   }
 
-  fn instruct(&mut self) -> Result<InstructionLen, Exception> {
+  fn instruct(&mut self, mmu: &mut MMU) -> Result<InstructionLen, Exception> {
     if self.wfi {
       return Ok(0);
     }
-    let inst = self.mem.read32(self.pc);
+    let inst = mmu.read32(self, self.pc);
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = if inst & 0b11 == 0b11 {
         println!("{:x}", inst);
@@ -80,7 +87,7 @@ impl Hart {
         Some(parsed) => parsed,
         None => Err(Exception::IllegalInstruction)?,
     };
-    (instructor.run)(inst, len, self)?;
+    (instructor.run)(inst, len, mmu, self)?;
     Ok(len)
   }
 

@@ -9,7 +9,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0001000000100000000000000 },
       ],
-      run: |_inst, _len, hart| {
+      run: |_inst, _len, _mmu, hart| {
         if hart.mode.as_u8() < Mode::Supervisor.as_u8() {
           return Err(Exception::IllegalInstruction);
         }
@@ -29,7 +29,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0011000000100000000000000 },
       ],
-      run: |_inst, _len, hart| {
+      run: |_inst, _len, _mmu, hart| {
         if hart.mode.as_u8() < Mode::Machine.as_u8() {
           return Err(Exception::IllegalInstruction);
         }
@@ -46,7 +46,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
       segments: vec![
         InstructionSegment { start: 7, end: 31, comp: 0b0001000001010000000000000 },
       ],
-      run: |_inst, _len, hart| {
+      run: |_inst, _len, _mmu, hart| {
         hart.wfi = true;
         Ok(())
       }
@@ -59,7 +59,7 @@ pub(crate) fn sm() -> Vec<Instructor> {
         InstructionSegment { start: 7, end: 14, comp: 0b00000000 },
         InstructionSegment { start: 25, end: 31, comp: 0b0001001 },
       ],
-      run: |_inst, _len, _hart| {
+      run: |_inst, _len, _mmu, _hart| {
         // do nothing
         Ok(())
       }
