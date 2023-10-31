@@ -61,7 +61,13 @@ pub(crate) fn sm() -> Vec<Instructor> {
         InstructionSegment { start: 7, end: 14, comp: 0b00000000 },
         InstructionSegment { start: 25, end: 31, comp: 0b0001001 },
       ],
-      run: |_inst, _len, _mmu, _hart| {
+      run: |_inst, _len, _mmu, hart| {
+        if hart.mode.as_u8() < Mode::Supervisor.as_u8() {
+          return Err(Exception::IllegalInstruction);
+        }
+        if hart.csr.read_mstatus_tvm() {
+          return Err(Exception::IllegalInstruction);
+        }
         // do nothing
         Ok(())
       }

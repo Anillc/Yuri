@@ -86,7 +86,7 @@ impl CsrRegistry {
 
   pub(crate) fn read(hart: &Hart, address: u16) -> Result<u64, Exception> {
     if address >> 8 & 0b11 <= hart.mode.as_u8() {
-      Ok(CsrRegistry::read_raw(&hart.csr, address))
+      CsrRegistry::read_raw(&hart.csr, address)
     } else {
       Err(Exception::IllegalInstruction)
     }
@@ -98,25 +98,28 @@ impl CsrRegistry {
       return Err(Exception::IllegalInstruction);
     }
     if address >> 8 & 0b11 <= hart.mode.as_u8() {
-      CsrRegistry::write_raw(&mut hart.csr, address, data);
-      Ok(())
+      CsrRegistry::write_raw(&mut hart.csr, address, data)
     } else {
       Err(Exception::IllegalInstruction)
     }
   }
 
-  fn read_raw(&self, address: u16) -> u64 {
+  fn read_raw(&self, address: u16) -> Result<u64, Exception> {
     match address {
-        FFLAGS => self.csr[FCSR as usize] & 0b11111,
-        FRM => (self.csr[FCSR as usize] >> 5) & 0b111,
-        SSTATUS => self.csr[MSTATUS as usize] & SSTATUS_READ_MASK,
-        SIE => self.csr[MIE as usize] & SIE_MASK,
-        SIP => self.csr[MIP as usize] & SIP_MASK,
-        _ => self.csr[address as usize],
+        FFLAGS => Ok(self.csr[FCSR as usize] & 0b11111),
+        FRM => Ok((self.csr[FCSR as usize] >> 5) & 0b111),
+        SSTATUS => Ok(self.csr[MSTATUS as usize] & SSTATUS_READ_MASK),
+        SIE => Ok(self.csr[MIE as usize] & SIE_MASK),
+        SIP => Ok(self.csr[MIP as usize] & SIP_MASK),
+        SATP => {
+          if self.read_mstatus_tvm() { return Err(Exception::IllegalInstruction); }
+          Ok(self.csr[SATP as usize])
+        }
+        _ => Ok(self.csr[address as usize]),
     }
   }
 
-  fn write_raw(&mut self, address: u16, data: u64) {
+  fn write_raw(&mut self, address: u16, data: u64) -> Result<(), Exception> {
     match address {
         FFLAGS => {
           let rest = self.csr[FCSR as usize] & !0b11111;
@@ -142,6 +145,10 @@ impl CsrRegistry {
           (self.csr[MIP as usize] & !SIP_MASK) | (data & SIP_MASK),
         SSTATUS => self.csr[MSTATUS as usize] =
           (self.csr[MSTATUS as usize] & !SSTATUS_WRITE_MASK) | (data & SSTATUS_WRITE_MASK),
+        SATP => {
+          if self.read_mstatus_tvm() { return Err(Exception::IllegalInstruction); }
+          self.csr[SATP as usize] = data;
+        },
         MTVEC | STVEC => {
           // ignore mode >= 2
           let mut mode = data & 0b11;
@@ -150,6 +157,7 @@ impl CsrRegistry {
         },
         _ => self.csr[address as usize] = data,
     };
+    Ok(())
   }
 
   pub(crate) fn trap_into_machine(&mut self, old: Mode) {
@@ -190,11 +198,12 @@ impl CsrRegistry {
   }
 
   pub(crate) fn read_frm(&self) -> u8 {
-    self.read_raw(FRM) as u8
+    ((self.csr[FCSR as usize] >> 5) & 0b111) as u8
   }
 
   pub(crate) fn write_fflags(&mut self, data: u64) {
-    self.write_raw(FFLAGS, data);
+    let rest = self.csr[FCSR as usize] & !0b11111;
+    self.csr[FCSR as usize] = rest | (data & 0b11111);
   }
 
   pub(crate) fn read_mstatus_sie(&self) -> bool {
@@ -210,6 +219,11 @@ impl CsrRegistry {
   pub(crate) fn read_mstatus_tsr(&self) -> bool {
     let status = self.csr[MSTATUS as usize];
     (status >> 22) & 0b1 == 1
+  }
+
+  pub(crate) fn read_mstatus_tvm(&self) -> bool {
+    let status = self.csr[MSTATUS as usize];
+    (status >> 20) & 0b1 == 1
   }
 
   pub(crate) fn read_mstatus_mprv_mpp_sum_mxr(&self) -> (bool, Mode, bool, bool) {
