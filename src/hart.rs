@@ -64,7 +64,7 @@ impl Hart {
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = match inst {
         InstructionWithType::L32(inst) => {
-          // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
+          println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
           (inst, 4)
         },
         InstructionWithType::L16(inst) =>
@@ -128,6 +128,7 @@ impl Hart {
     let trap_value = match trap {
         Trap::Exception(Exception::Breakpoint(value))
       | Trap::Exception(Exception::LoadAddressMisaligned(value))
+      | Trap::Exception(Exception::LoadAccessFault(value))
       | Trap::Exception(Exception::StoreAMOAddressMisaligned(value))
       | Trap::Exception(Exception::InstructionPageFault(value))
       | Trap::Exception(Exception::LoadPageFault(value))
