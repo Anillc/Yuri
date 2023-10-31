@@ -78,10 +78,13 @@ impl Hart {
     Ok(len)
   }
 
-  fn check_interrupt(&self) -> Option<Interrupt> {
+  fn check_interrupt(&mut self) -> Option<Interrupt> {
     let mie = self.csr.read_mie();
     let mip = self.csr.read_mip();
-    fn check_mode(hart: &Hart, interrupt_mode: Mode) -> bool {
+    fn check_mode(hart: &mut Hart, interrupt_mode: Mode) -> bool {
+      // resume hart here, as mie and mip have benn checked
+      // WFI ignores MIE and SIE in mstatus
+      hart.wfi = false;
       match (interrupt_mode, hart.mode) {
         (Mode::Machine, Mode::Machine) => hart.csr.read_mstatus_mie(),
         (Mode::Supervisor, Mode::Supervisor) => hart.csr.read_mstatus_sie(),
