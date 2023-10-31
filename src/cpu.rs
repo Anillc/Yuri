@@ -17,12 +17,12 @@ impl Cpu {
     }
   }
 
-  pub(crate) fn run(&mut self) {
+  pub(crate) fn run(&mut self, tohost: u64) {
     loop {
       self.hart.step(&mut self.mmu);
-      let fromvm = self.bus.read64(0x0000000080001000);
+      let fromvm = self.bus.read64(tohost);
       if fromvm != 0 {
-        self.bus.write64(0x0000000080001000, 0);
+        self.bus.write64(tohost, 0);
         if fromvm >> 32 == 0x01010000 {
           print!("{}", char::from_u32(fromvm as u32).unwrap());
         } else if fromvm == 1 {

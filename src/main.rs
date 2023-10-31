@@ -25,22 +25,21 @@ fn run_program(path: &str) {
       mem[(segment.p_vaddr + i) as usize] = file[(segment.p_offset + i) as usize];
     }
   }
+  let (parsing_table, string_table) = elf.symbol_table().unwrap().unwrap();
+  let tohost = parsing_table.iter().find(|symbol|
+    string_table.get(symbol.st_name as usize).unwrap() == "tohost").unwrap();
+
   let mut cpu = Cpu::new(mem.into_boxed_slice());
   cpu.hart.pc = elf.ehdr.e_entry;
   cpu.hart.regs.set(2, 0x6f00);
-  cpu.run();
+  cpu.run(tohost.st_value);
 }
 
 fn main() {
-  let dir = fs::read_dir("../riscv-tests/isa").unwrap();
+  let dir = fs::read_dir("../riscv-tests/run").unwrap();
   for file in dir {
     let file = file.unwrap();
-    let name = file.file_name();
-    let name = name.to_str().unwrap();
-    for extension in ["i", "m", "a", "f", "d", "c"] {
-      if name.starts_with(&format!("rv64u{extension}-v-")) && !name.contains('.') {
-        run_program(file.path().to_str().unwrap());
-      }
-    }
+    let name = file.file_name().to_str().unwrap();
+    run_program(file.path().to_str().unwrap());
   }
 }

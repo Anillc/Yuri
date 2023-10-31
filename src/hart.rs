@@ -63,8 +63,10 @@ impl Hart {
     let inst = mmu.fetch(self, self.pc)?;
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = match inst {
-        InstructionWithType::L32(inst) =>
-          (inst, 4),
+        InstructionWithType::L32(inst) => {
+          // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
+          (inst, 4)
+        },
         InstructionWithType::L16(inst) =>
           (decompress(inst)?, 2),
       };
@@ -107,34 +109,17 @@ impl Hart {
 
   fn handle_trap(&mut self, trap: Trap) {
     let code = trap.code();
-    let (cause, mode) = match trap {
-      Trap::Interrupt(ref interrupt) => {
-        let mode = match interrupt.mode() {
-          // Traps never transition from a more-privileged mode to a less-privileged mode.
-          Mode::Machine => if self.mode == Mode::Machine {
-            Mode::Machine
-          } else if (self.csr.read_medeleg() >> code) & 0b1 == 1 {
-            Mode::Supervisor
-          } else {
-            Mode::Machine
-          },
-          Mode::Supervisor => Mode::Supervisor,
-          Mode::User => unreachable!(),
-        };
-        ((1 << 63) | code, mode)
-      },
-      Trap::Exception(_) => {
-        let mode = match self.mode {
-          // Traps never transition from a more-privileged mode to a less-privileged mode.
-          Mode::Machine => Mode::Machine,
-          Mode::Supervisor => if (self.csr.read_mideleg() >> code) & 0b1 == 1 {
-            Mode::Supervisor
-          } else {
-            Mode::Machine
-          },
-          Mode::User => Mode::Supervisor,
-        };
-        (code, mode)
+    let (delegation, cause) = match trap {
+      Trap::Interrupt(_) => (self.csr.read_mideleg(), (1 << 63) | code),
+      Trap::Exception(_) => (self.csr.read_medeleg(), code),
+    };
+    let mode = match self.mode {
+      // Traps never transition from a more-privileged mode to a less-privileged mode.
+      Mode::Machine => Mode::Machine,
+      Mode::Supervisor | Mode::User => if (delegation >> code) & 0b1 == 1 {
+        Mode::Supervisor
+      } else {
+        Mode::Machine
       },
     };
     let trap_value = match trap {
