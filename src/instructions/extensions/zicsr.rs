@@ -9,15 +9,15 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b001),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
+        let csr = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
         if rd != 0 {
-          let res = CsrRegistry::read(hart, imm)?;
-          CsrRegistry::write(hart, imm, hart.regs[rs1])?;
+          let res = CsrRegistry::read(hart, csr)?;
+          CsrRegistry::write(hart, csr, hart.regs[rs1])?;
           hart.regs.set(rd, res);
         } else {
-          CsrRegistry::write(hart, imm, hart.regs[rs1])?;
+          CsrRegistry::write(hart, csr, hart.regs[rs1])?;
         }
         Ok(())
       },
@@ -28,12 +28,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b010),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
+        let csr = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(hart, imm)?;
+        let res = CsrRegistry::read(hart, csr)?;
         if rs1 != 0 {
-          CsrRegistry::write(hart, imm, res | hart.regs[rs1])?;
+          CsrRegistry::write(hart, csr, res | hart.regs[rs1])?;
         }
         hart.regs.set(rd, res);
         Ok(())
@@ -45,12 +45,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b011),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
+        let csr = (inst >> 20) as u16;
         let rs1 = (inst >> 15 & 0b11111) as usize;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(hart, imm)?;
+        let res = CsrRegistry::read(hart, csr)?;
         if rs1 != 0 {
-          CsrRegistry::write(hart, imm, res & !hart.regs[rs1])?;
+          CsrRegistry::write(hart, csr, res & !hart.regs[rs1])?;
         }
         hart.regs.set(rd, res);
         Ok(())
@@ -62,15 +62,15 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b101),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
-        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let csr = (inst >> 20) as u16;
+        let uimm = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
         if rd != 0 {
-          let res = CsrRegistry::read(hart, imm)?;
-          CsrRegistry::write(hart, imm, rs1)?;
+          let res = CsrRegistry::read(hart, csr)?;
+          CsrRegistry::write(hart, csr, uimm)?;
           hart.regs.set(rd, res);
         } else {
-          CsrRegistry::write(hart, imm, rs1)?;
+          CsrRegistry::write(hart, csr, uimm)?;
         }
         Ok(())
       },
@@ -81,12 +81,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b110),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
-        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let csr = (inst >> 20) as u16;
+        let uimm = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(hart, imm)?;
-        if imm != 0 {
-          CsrRegistry::write(hart, imm, res | rs1)?;
+        let res = CsrRegistry::read(hart, csr)?;
+        if uimm != 0 {
+          CsrRegistry::write(hart, csr, res | uimm)?;
         }
         hart.regs.set(rd, res);
         Ok(())
@@ -98,12 +98,12 @@ pub(crate) fn zicsr() -> Vec<Instructor> {
       opcode: 0b1110011,
       segments: funct3(0b111),
       run: |inst, _len, _mmu, hart| {
-        let imm = (inst >> 20) as u16;
-        let rs1 = (inst >> 15 & 0b11111) as u64;
+        let csr = (inst >> 20) as u16;
+        let uimm = (inst >> 15 & 0b11111) as u64;
         let rd = (inst >> 7 & 0b11111) as usize;
-        let res = CsrRegistry::read(hart, imm)?;
-        if imm != 0 {
-          CsrRegistry::write(hart, imm, res & !rs1)?;
+        let res = CsrRegistry::read(hart, csr)?;
+        if uimm != 0 {
+          CsrRegistry::write(hart, csr, res & !uimm)?;
         }
         hart.regs.set(rd, res);
         Ok(())
