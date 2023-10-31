@@ -24,10 +24,6 @@ fn main() {
   let dir = fs::read_dir("../riscv-tests/run").unwrap();
   for file in dir {
     let file = file.unwrap();
-    let name = file.file_name();
-    let name = name.to_str().unwrap();
-    if name == "rv64mi-p-csr" {
-      run_program(file.path().to_str().unwrap());
-    }
+    run_program(file.path().to_str().unwrap());
   }
 }
