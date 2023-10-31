@@ -1,6 +1,6 @@
 use softfloat_wrapper::{F64, Float, F32};
 
-use crate::{instructions::Instructor, utils::{round_mode, classify, Boxed, FloatFlags}};
+use crate::{instructions::Instructor, utils::{round_mode, classify, Boxed, FloatFlags, check_and_set_fs}};
 
 use super::{funct3, I, InstructionParser, S, funct_rfp_rs3, RFPRS3, funct_rfp, RFP, funct_rfp_rs2, funct_rfp_rm, funct_rfp_rs2_rm};
 
@@ -13,6 +13,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b0000111,
       segments: funct3(0b011),
       run: |inst, _len, mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let I { imm, rs1, rd } = inst.i();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
         hart.fregs.set(rd, mmu.read64(hart, address)?);
@@ -25,6 +26,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b0100111,
       segments: funct3(0b011),
       run: |inst, _len, mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let S { imm, rs2, rs1 } = inst.s();
         let address = hart.regs[rs1].wrapping_add(imm as u64);
         mmu.write64(hart, address, hart.fregs[rs2])?;
@@ -37,6 +39,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1000011,
       segments: funct_rfp_rs3(0b01),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -54,6 +57,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1000111,
       segments: funct_rfp_rs3(0b01),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -71,6 +75,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1001011,
       segments: funct_rfp_rs3(0b01),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -88,6 +93,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1001111,
       segments: funct_rfp_rs3(0b01),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFPRS3 { rs3, rs2, rs1, rm, rd } = inst.rfp_rs3();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -105,6 +111,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -121,6 +128,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00001),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -137,6 +145,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00010),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -153,6 +162,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp(0b01, 0b00011),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -169,6 +179,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b01011),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -184,6 +195,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b00100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -198,6 +210,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b00100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -212,6 +225,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b010, 0b01, 0b00100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let mut a = F64::from_bits(hart.fregs[rs1]);
         let b = F64::from_bits(hart.fregs[rs2]);
@@ -226,6 +240,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b00101),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -249,6 +264,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b00101),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -272,6 +288,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b00, 0b01000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -287,6 +304,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b01000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -302,6 +320,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b010, 0b01, 0b10100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -317,6 +336,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b001, 0b01, 0b10100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -332,6 +352,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rm(0b000, 0b01, 0b10100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2, rs1, rm: _, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let a = F64::from_bits(hart.fregs[rs1]);
@@ -347,6 +368,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b001, 0b00000, 0b01, 0b11100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, false)?;
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         let num = F64::from_bits(hart.fregs[rs1]);
         hart.regs.set(rd, classify(num));
@@ -359,6 +381,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b11000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -374,6 +397,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b01, 0b11000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -389,6 +413,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00000, 0b01, 0b11010),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -404,6 +429,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00001, 0b01, 0b11010),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -419,6 +445,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00010, 0b01, 0b11000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -434,6 +461,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00011, 0b01, 0b11000),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -449,6 +477,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b000, 0b00000, 0b01, 0b11100),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, false)?;
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         hart.regs.set(rd, hart.fregs[rs1]);
         Ok(())
@@ -460,6 +489,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00010, 0b01, 0b11010),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -475,6 +505,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2(0b00011, 0b01, 0b11010),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm, rd } = inst.rfp();
         let flags = FloatFlags::new();
         let rm = round_mode(rm, hart)?;
@@ -490,6 +521,7 @@ pub(crate) fn d() -> Vec<Instructor> {
       opcode: 0b1010011,
       segments: funct_rfp_rs2_rm(0b000, 0b00000, 0b01, 0b11110),
       run: |inst, _len, _mmu, hart| {
+        check_and_set_fs(hart, true)?;
         let RFP { rs2: _, rs1, rm: _, rd } = inst.rfp();
         hart.fregs.set(rd, hart.regs[rs1]);
         Ok(())

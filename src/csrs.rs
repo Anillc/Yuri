@@ -34,9 +34,9 @@ const SATP: u16 = 0x180;
 
 // TODO: cycle
 
-const MSTATUS_MASK: u64 = 0b0000000000000000000000000000000000000000011111100001100110101010;
-const SSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000000011000000000100100010;
-const SSTATUS_READ_MASK: u64 = 0b1000000000000000000000000000001100000000000011011110011101100010;
+const MSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000011111100111100110101010;
+const SSTATUS_READ_MASK: u64  = 0b1000000000000000000000000000001100000000000011011110011101100010;
+const SSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000000011000110000100100010;
 const MIE_MASK: u64 = 0b0000101010101010;
 const MIP_MASK: u64 = 0b0000101010101010;
 const SIE_MASK: u64 = 0b0000001000100010;
@@ -79,7 +79,8 @@ impl CsrRegistry {
     {
       let sxl = 2 << 34;
       let uxl = 2 << 32;
-      csr[MSTATUS as usize] = sxl | uxl;
+      let fs = 1 << 13;
+      csr[MSTATUS as usize] = sxl | uxl | fs;
     }
     CsrRegistry { csr }
   }
@@ -108,7 +109,16 @@ impl CsrRegistry {
     match address {
         FFLAGS => Ok(self.csr[FCSR as usize] & 0b11111),
         FRM => Ok((self.csr[FCSR as usize] >> 5) & 0b111),
-        SSTATUS => Ok(self.csr[MSTATUS as usize] & SSTATUS_READ_MASK),
+        MSTATUS => {
+          let status = self.csr[MSTATUS as usize];
+          let sd = if (status >> 13) & 0b11 == 0b11 { 1 << 63 } else { 0 };
+          Ok(status | sd)
+        },
+        SSTATUS => {
+          let status = self.csr[MSTATUS as usize];
+          let sd = if (status >> 13) & 0b11 == 0b11 { 1 << 63 } else { 0 };
+          Ok((status & SSTATUS_READ_MASK) | sd)
+        },
         SIE => Ok(self.csr[MIE as usize] & SIE_MASK),
         SIP => Ok(self.csr[MIP as usize] & SIP_MASK),
         SATP => {
@@ -124,10 +134,16 @@ impl CsrRegistry {
         FFLAGS => {
           let rest = self.csr[FCSR as usize] & !0b11111;
           self.csr[FCSR as usize] = rest | (data & 0b11111);
+          if self.read_mstatus_fs() != 0 {
+            self.write_mstatus_fs(0b11);
+          }
         },
         FRM => {
           let rest = self.csr[FCSR as usize] & !0b11100000;
-          self.csr[FCSR as usize] = rest | ((data & 0b111) << 5)
+          self.csr[FCSR as usize] = rest | ((data & 0b111) << 5);
+          if self.read_mstatus_fs() != 0 {
+            self.write_mstatus_fs(0b11);
+          }
         },
         FCSR => self.csr[FCSR as usize] = data & 0b11111111,
         MISA => {},
@@ -136,7 +152,7 @@ impl CsrRegistry {
         MIMPID => {},
         MHARTID => {},
         MSTATUS => self.csr[MSTATUS as usize] =
-          (self.csr[MSTATUS as usize] & !MSTATUS_MASK) | (data & MSTATUS_MASK),
+          (self.csr[MSTATUS as usize] & !MSTATUS_WRITE_MASK) | (data & MSTATUS_WRITE_MASK),
         MIE => self.csr[MIE as usize] = data & MIE_MASK,
         MIP => self.csr[MIP as usize] = data & MIP_MASK,
         SIE => self.csr[MIE as usize] =
@@ -232,6 +248,16 @@ impl CsrRegistry {
       Mode::from_u8(((status >> 11) & 0b11) as u8),
       (status >> 18) & 0b1 == 1,
       (status >> 19) & 0b1 == 1)
+  }
+
+  pub(crate) fn read_mstatus_fs(&self) -> u8 {
+    let status = self.csr[MSTATUS as usize];
+    (status >> 13 & 0b11) as u8
+  }
+
+  pub(crate) fn write_mstatus_fs(&mut self, fs: u8) {
+    let status = self.csr[MSTATUS as usize];
+    self.csr[MSTATUS as usize] = (status & !(0b11 << 13)) | ((fs as u64 & 0b11) << 13);
   }
 
   pub(crate) fn read_mie(&self) -> MIEP {

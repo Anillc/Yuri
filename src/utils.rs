@@ -99,3 +99,11 @@ impl FloatFlags {
     csr.write_fflags(data);
   }
 }
+
+pub(crate) fn check_and_set_fs(hart: &mut Hart, set_dirty: bool) -> Result<(), Exception> {
+  if hart.csr.read_mstatus_fs() == 0 { return Err(Exception::IllegalInstruction); }
+  if set_dirty {
+    hart.csr.write_mstatus_fs(0b11);
+  }
+  Ok(())
+}
