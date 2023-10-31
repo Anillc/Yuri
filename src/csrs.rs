@@ -34,8 +34,9 @@ const SATP: u16 = 0x180;
 
 // TODO: cycle
 
-const MSTATUS_MASK: u64 = 0b1000000000000000000000000011111100000000011111111111111111101010;
-const SSTATUS_MASK: u64 = 0b1000000000000000000000000000001100000000000011011110011101100010;
+const MSTATUS_MASK: u64 = 0b0000000000000000000000000000000000000000011111100001100110101010;
+const SSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000000011000000000100100010;
+const SSTATUS_READ_MASK: u64 = 0b1000000000000000000000000000001100000000000011011110011101100010;
 const MIE_MASK: u64 = 0b0000101010101010;
 const MIP_MASK: u64 = 0b0000101010101010;
 const SIE_MASK: u64 = 0b0000001000100010;
@@ -62,7 +63,25 @@ pub(crate) struct MIEP {
 
 impl CsrRegistry {
   pub(crate) fn new() -> CsrRegistry {
-    CsrRegistry { csr: [0; 4096] }
+    let mut csr = [0; 4096];
+    {
+      let mxl = 2 << 62;
+      let a = 1;
+      let c = 1 << 2;
+      let d = 1 << 3;
+      let f = 1 << 5;
+      let i = 1 << 8;
+      let m = 1 << 12;
+      let s = 1 << 18;
+      let u = 1 << 20;
+      csr[MISA as usize] = mxl | i | m | a | f | d | c | s | u;
+    };
+    {
+      let sxl = 2 << 34;
+      let uxl = 2 << 32;
+      csr[MSTATUS as usize] = sxl | uxl;
+    }
+    CsrRegistry { csr }
   }
 
   pub(crate) fn read(hart: &Hart, address: u16) -> Result<u64, Exception> {
@@ -90,18 +109,9 @@ impl CsrRegistry {
     match address {
         FFLAGS => self.csr[FCSR as usize] & 0b11111,
         FRM => (self.csr[FCSR as usize] >> 5) & 0b111,
-        MISA => {
-          let mxl = 2 << 62;
-          let a = 1;
-          let c = 1 << 2;
-          let d = 1 << 3;
-          let f = 1 << 5;
-          let i = 1 << 8;
-          let m = 1 << 12;
-          let s = 1 << 18;
-          let u = 1 << 20;
-          mxl | i | m | a | f | d | c | s | u
-        },
+        SSTATUS => self.csr[MSTATUS as usize] & SSTATUS_READ_MASK,
+        SIE => self.csr[MIE as usize] & SIE_MASK,
+        SIP => self.csr[MIP as usize] & SIP_MASK,
         _ => self.csr[address as usize],
     }
   }
@@ -122,7 +132,8 @@ impl CsrRegistry {
         MARCHID => {},
         MIMPID => {},
         MHARTID => {},
-        MSTATUS => self.csr[MSTATUS as usize] = data & MSTATUS_MASK,
+        MSTATUS => self.csr[MSTATUS as usize] =
+          (self.csr[MSTATUS as usize] & !MSTATUS_MASK) | (data & MSTATUS_MASK),
         MIE => self.csr[MIE as usize] = data & MIE_MASK,
         MIP => self.csr[MIP as usize] = data & MIP_MASK,
         SIE => self.csr[MIE as usize] =
@@ -130,7 +141,7 @@ impl CsrRegistry {
         SIP => self.csr[MIP as usize] =
           (self.csr[MIP as usize] & !SIP_MASK) | (data & SIP_MASK),
         SSTATUS => self.csr[MSTATUS as usize] =
-          (self.csr[MSTATUS as usize] & !SSTATUS_MASK) | (data & SSTATUS_MASK),
+          (self.csr[MSTATUS as usize] & !SSTATUS_WRITE_MASK) | (data & SSTATUS_WRITE_MASK),
         MTVEC | STVEC => {
           // ignore mode >= 2
           let mut mode = data & 0b11;
