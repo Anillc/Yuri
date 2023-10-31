@@ -26,7 +26,7 @@ fn main() {
     let file = file.unwrap();
     let name = file.file_name();
     let name = name.to_str().unwrap();
-    if name == "rv64mi-p-zicntr" {
+    if name == "rv64mi-p-access" {
       run_program(file.path().to_str().unwrap());
     }
   }

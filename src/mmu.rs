@@ -189,16 +189,19 @@ impl MMU {
   pub(crate) fn fetch(&self, hart: &Hart, address: u64) -> Result<InstructionWithType, Exception> {
     debug_assert!(address % 2 == 0);
     let address_low = self.translate(address, hart, AccessType::Execute)?;
-    let instruction_low = self.bus.read16(address_low)?;
+    let instruction_low = self.bus.read16(address_low)
+      .map_err(|_| Exception::InstructionAccessFault(address))?;
     if instruction_low & 0b11 != 0b11 {
       return Ok(InstructionWithType::L16(instruction_low));
     }
     if address % 4 == 0 {
-      let instruction_high = self.bus.read16(address_low + 2)? as u32;
+      let instruction_high = self.bus.read16(address_low + 2)
+        .map_err(|_| Exception::InstructionAccessFault(address))? as u32;
       return Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32));
     } else {
       let address_high = self.translate(address + 2, hart, AccessType::Execute)?;
-      let instruction_high = self.bus.read16(address_high)? as u32;
+      let instruction_high = self.bus.read16(address_high)
+        .map_err(|_| Exception::InstructionAccessFault(address))? as u32;
       return Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32));
     }
   }

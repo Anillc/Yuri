@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub(crate) enum Exception {
+  InstructionAccessFault(u64),
   IllegalInstruction,
   Breakpoint(u64),
   LoadAddressMisaligned(u64),
@@ -39,6 +40,7 @@ impl Trap {
       Trap::Interrupt(Interrupt::MachineTimer) => 7,
       Trap::Interrupt(Interrupt::SupervisorExternal) => 9,
       Trap::Interrupt(Interrupt::MachineExternal) => 11,
+      Trap::Exception(Exception::InstructionAccessFault(_)) => 1,
       Trap::Exception(Exception::IllegalInstruction) => 2,
       Trap::Exception(Exception::Breakpoint(_)) => 3,
       Trap::Exception(Exception::LoadAddressMisaligned(_)) => 4,
