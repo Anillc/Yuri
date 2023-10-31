@@ -2,11 +2,19 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::{hart::{Hart, InstructionLen}, trap::Exception, mmu::MMU};
+use crate::{hart::Hart, trap::Exception, mmu::MMU};
 
 use self::extensions::{i::i, zifenci::zifenci, zicsr::zicsr, m::m, a::a, f::f, d::d, sm::sm};
 
 pub(crate) mod extensions;
+
+// 0, 2, 4
+pub(crate) type InstructionLen = u64;
+
+#[derive(Debug)]
+pub(crate) enum InstructionWithType {
+  L32(u32), L16(u16),
+}
 
 //                               opcode, (mask, comp, instructor)
 static INSTRUCTORS: Lazy<HashMap<u8, Vec<(u32, u32, Instructor)>>> = Lazy::new(|| {

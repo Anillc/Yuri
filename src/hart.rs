@@ -1,4 +1,4 @@
-use crate::{register::{Registers, FRegisters}, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor}, trap::{Exception, Trap, Interrupt}, mmu::MMU};
+use crate::{register::{Registers, FRegisters}, csrs::{CsrRegistry, MIEP}, instructions::{parse, extensions::c::decompress, Instructor, InstructionLen, InstructionWithType}, trap::{Exception, Trap, Interrupt}, mmu::MMU};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Mode {
@@ -23,9 +23,6 @@ impl Mode {
     }
   }
 }
-
-// 0, 2, 4
-pub(crate) type InstructionLen = u64;
 
 pub struct Hart {
   pub(crate) regs: Registers,
@@ -65,19 +62,16 @@ impl Hart {
     }
     let inst = mmu.fetch(self, self.pc)?;
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
-      let (inst, len) = if inst & 0b11 == 0b11 {
-        // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
-        (inst, 4)
-      } else {
-        // println!("{:x}", inst as u16);
-        (decompress((inst) as u16)?, 2)
+      let (inst, len) = match inst {
+        InstructionWithType::L32(inst) =>
+          (inst, 4),
+        InstructionWithType::L16(inst) =>
+          (decompress(inst)?, 2),
       };
       (parse(inst)?, inst, len)
     };
-    let (instructor, inst, len) = match parsed {
-        Some(parsed) => parsed,
-        None => Err(Exception::IllegalInstruction)?,
-    };
+    let (instructor, inst, len) = parsed
+      .ok_or_else(|| Exception::IllegalInstruction)?;
     (instructor.run)(inst, len, mmu, self)?;
     Ok(len)
   }
@@ -146,6 +140,7 @@ impl Hart {
     let trap_value = match trap {
         Trap::Exception(Exception::Breakpoint(value))
       | Trap::Exception(Exception::LoadAddressMisaligned(value))
+      | Trap::Exception(Exception::StoreAMOAddressMisaligned(value))
       | Trap::Exception(Exception::InstructionPageFault(value))
       | Trap::Exception(Exception::LoadPageFault(value))
       | Trap::Exception(Exception::StoreAMOPageFault(value)) => value,
