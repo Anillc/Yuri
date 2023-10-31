@@ -33,7 +33,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let J { imm, rd } = inst.j();
         let res = hart.pc.wrapping_add(len);
-        hart.pc = hart.pc.wrapping_add(imm as u64)
+        hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
           .wrapping_sub(len);
         hart.regs.set(rd, res);
@@ -48,7 +48,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let I { imm, rs1, rd } = inst.i();
         let res = hart.pc.wrapping_add(len);
-        hart.pc = hart.regs[rs1].wrapping_add(imm as u64)
+        hart.pc = hart.regs[rs1].wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
           .wrapping_sub(len);
         hart.regs.set(rd, res);
@@ -63,7 +63,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] == hart.regs[rs2] {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }
@@ -78,7 +78,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] != hart.regs[rs2] {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }
@@ -93,7 +93,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if (hart.regs[rs1] as i64) < (hart.regs[rs2] as i64) {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }
@@ -108,7 +108,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if (hart.regs[rs1] as i64) >= (hart.regs[rs2] as i64) {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }
@@ -123,7 +123,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] < hart.regs[rs2] {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }
@@ -138,7 +138,7 @@ pub(crate) fn i() -> Vec<Instructor> {
       run: |inst, len, _mmu, hart| {
         let B { imm, rs2, rs1 } = inst.b();
         if hart.regs[rs1] >= hart.regs[rs2] {
-          hart.pc = hart.pc.wrapping_add(imm as u64)
+          hart.pc = hart.pc.wrapping_add(imm as u64 & !1)
         // hart.step will add instruction len
             .wrapping_sub(len);
         }

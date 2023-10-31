@@ -166,6 +166,7 @@ impl MMU {
       }
     }
 
+    // TODO: implement A D
     if !pte.a ||
       ((access == AccessType::Write || access == AccessType::ReadWrite) && !pte.d) {
         return fault(address, access);
