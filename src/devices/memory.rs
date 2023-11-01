@@ -1,12 +1,12 @@
 use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64, Ordering}, Arc};
 
-use crate::trap::Exception;
+use crate::{trap::Exception, hart::Hart};
 
 use super::Device;
 
 pub(crate) const MEMORY_SIZE: usize = 1024 * 1024;
 pub(crate) const MEMORY_START: u64 = 0x80000000;
-pub(crate) const MEMORY_END: u64 = MEMORY_START + MEMORY_SIZE as u64;
+pub(crate) const MEMORY_END: u64 = MEMORY_START + MEMORY_SIZE as u64 - 1;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Memory {
@@ -45,6 +45,8 @@ impl Memory {
 }
 
 impl Device for Memory {
+  fn step(&mut self, _hart: &mut Hart) {}
+
   fn read8(&self, address: u64) -> Result<u8, Exception> {
     let address = address - MEMORY_START;
     Ok(unsafe { *(self.mem.wrapping_add(address as usize)) })

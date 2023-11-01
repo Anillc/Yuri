@@ -32,8 +32,6 @@ const SIP: u16 = 0x144;
 
 const SATP: u16 = 0x180;
 
-// TODO: cycle
-
 const MSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000011111100111100110101010;
 const SSTATUS_READ_MASK: u64  = 0b1000000000000000000000000000001100000000000011011110011101100010;
 const SSTATUS_WRITE_MASK: u64 = 0b0000000000000000000000000000000000000000000011000110000100100010;
@@ -292,6 +290,10 @@ impl CsrRegistry {
     self.csr[MIDELEG as usize]
   }
 
+  pub(crate) fn read_mtvec(&mut self) -> u64 {
+    self.csr[MTVEC as usize]
+  }
+
   pub(crate) fn write_mepc(&mut self, data: u64) {
     self.csr[MEPC as usize] = data;
   }
@@ -304,8 +306,12 @@ impl CsrRegistry {
     self.csr[MTVAL as usize] = data;
   }
 
-  pub(crate) fn read_mtvec(&mut self) -> u64 {
-    self.csr[MTVEC as usize]
+  pub(crate) fn write_mip_mtip(&mut self, bit: u64) {
+    self.csr[MIP as usize] = self.csr[MIP as usize] & !(1 << 7) | ((bit & 0b1) << 7);
+  }
+
+  pub(crate) fn write_mip_msip(&mut self, bit: u64) {
+    self.csr[MIP as usize] = self.csr[MIP as usize] & !(1 << 3) | ((bit & 0b1) << 3);
   }
 
   pub(crate) fn write_sepc(&mut self, data: u64) {
