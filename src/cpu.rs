@@ -25,8 +25,10 @@ impl Cpu {
   }
 
   pub(crate) fn run(&mut self) {
+    let mut bus = self.bus.clone();
     loop {
       self.hart.step(&mut self.mmu);
+      self.bus.step(&mut bus, &mut self.hart);
       // riscv-tests
       let fromvm = self.bus.read64(self.tohost).unwrap();
       if fromvm != 0 {

@@ -2,8 +2,11 @@ use std::sync::atomic::Ordering;
 
 use crate::{trap::Exception, hart::Hart};
 
+use self::bus::Bus;
+
 pub(crate) mod memory;
 pub(crate) mod aclint;
+pub(crate) mod plic;
 pub(crate) mod bus;
 
 #[macro_export]
@@ -161,7 +164,7 @@ macro_rules! device_rw {
 }
 
 pub(crate) trait Device {
-  fn step(&mut self, hart: &mut Hart);
+  fn step(&mut self, bus: &mut Bus, hart: &mut Hart);
   fn read8(&self, address: u64) -> Result<u8, Exception>;
   fn read16(&self, address: u64) -> Result<u16, Exception>;
   fn read32(&self, address: u64) -> Result<u32, Exception>;

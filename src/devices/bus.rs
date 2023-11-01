@@ -2,12 +2,13 @@ use std::sync::{atomic::Ordering, Arc, Mutex};
 
 use crate::{trap::Exception, hart::Hart};
 
-use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}};
+use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}, plic::{Plic, PLIC_START, PLIC_END}};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Bus {
-  memory: Memory,
-  aclint: Arc<Mutex<Aclint>>,
+  pub(crate) memory: Memory,
+  pub(crate) aclint: Arc<Mutex<Aclint>>,
+  pub(crate) plic: Arc<Mutex<Plic>>,
 }
 
 impl Bus {
@@ -15,6 +16,7 @@ impl Bus {
     Bus {
       memory: Memory::new(),
       aclint: Arc::new(Mutex::new(Aclint::new())),
+      plic: Arc::new(Mutex::new(Plic::new())),
     }
   }
   #[inline]
@@ -25,6 +27,7 @@ impl Bus {
     match address {
       MEMORY_START..=MEMORY_END => Ok(run(&self.memory)?),
       ACLINT_START..=ACLINT_END => Ok(run(&*self.aclint.lock().unwrap())?),
+      PLIC_START..=PLIC_END => Ok(run(&*self.plic.lock().unwrap())?),
       _ => Err(Exception::LoadAccessFault(address))
     }
   }
@@ -36,16 +39,19 @@ impl Bus {
     match address {
       MEMORY_START..=MEMORY_END => Ok(run(&mut self.memory)?),
       ACLINT_START..=ACLINT_END => Ok(run(&mut *self.aclint.lock().unwrap())?),
+      PLIC_START..=PLIC_END => Ok(run(&mut *self.plic.lock().unwrap())?),
       _ => Err(Exception::LoadAccessFault(address))
     }
   }
 }
 
 impl Device for Bus {
-  fn step(&mut self, hart: &mut Hart) {
-    self.memory.step(hart);
-    self.aclint.lock().unwrap().step(hart);
+  fn step(&mut self, bus: &mut Bus, hart: &mut Hart) {
+    self.memory.step(bus, hart);
+    self.aclint.lock().unwrap().step(bus, hart);
+    self.plic.lock().unwrap().step(bus, hart);
   }
+
   fn read8(&self, address: u64) -> Result<u8, Exception> { self.device(address, |device| device.read8(address)) }
   fn read16(&self, address: u64) -> Result<u16, Exception> { self.device(address, |device| device.read16(address)) }
   fn read32(&self, address: u64) -> Result<u32, Exception> { self.device(address, |device| device.read32(address)) }

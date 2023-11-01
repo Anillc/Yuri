@@ -1,6 +1,6 @@
 use crate::{device_atomic, device_rw, hart::Hart, trap::Exception};
 
-use super::Device;
+use super::{Device, bus::Bus};
 
 pub(crate) const ACLINT_START: u64 = 0x02000000;
 pub(crate) const ACLINT_END: u64 = ACLINT_START + 0x0000bfff;
@@ -39,7 +39,7 @@ impl Device for Aclint {
   device_atomic!();
   device_rw!();
 
-  fn step(&mut self, hart: &mut Hart) {
+  fn step(&mut self, _bus: &mut Bus, hart: &mut Hart) {
     self.mtime = self.mtime.wrapping_add(1);
     hart.csr.write_mip_mtip(if self.mtime >= self.mtimecmp0 { 0 } else { 1 });
 
@@ -69,6 +69,7 @@ impl Device for Aclint {
         let mut msip0 = self.msip0.to_le_bytes();
         msip0[(address - MSIP0_START) as usize] = data;
         self.msip0 = u32::from_le_bytes(msip0);
+        self.msip0_wrote = true;
       },
       MTIMECMP0_START..=MTIMECMP0_END => {
         let mut mtimecmp0 = self.mtimecmp0.to_le_bytes();

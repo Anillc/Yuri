@@ -2,7 +2,7 @@ use std::sync::{Mutex, atomic::{AtomicU32, AtomicU64, AtomicI32, AtomicI64, Orde
 
 use crate::{trap::Exception, hart::Hart};
 
-use super::Device;
+use super::{Device, bus::Bus};
 
 pub(crate) const MEMORY_SIZE: usize = 1024 * 1024;
 pub(crate) const MEMORY_START: u64 = 0x80000000;
@@ -45,7 +45,7 @@ impl Memory {
 }
 
 impl Device for Memory {
-  fn step(&mut self, _hart: &mut Hart) {}
+  fn step(&mut self, _bus: &mut Bus, _hart: &mut Hart) {}
 
   fn read8(&self, address: u64) -> Result<u8, Exception> {
     let address = address - MEMORY_START;
