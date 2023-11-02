@@ -69,7 +69,6 @@ impl Plic {
     let irq = self.highest_irq(context);
     let index = (irq / 8) as usize;
     let offset = irq % 8;
-    // TODO: find all self.xxx = self.xxx &
     self.pending[index] &= !(1 << offset);
     self.claimed[context][irq as usize] = true;
     irq
