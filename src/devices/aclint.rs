@@ -54,7 +54,7 @@ impl Device for Aclint {
     // }
   }
 
-  fn read8(&self, address: u64) -> Result<u8, Exception> {
+  fn read8(&mut self, address: u64) -> Result<u8, Exception> {
     match address {
       MSIP0_START..=MSIP0_END => Ok(self.msip0.to_le_bytes()[(address - MSIP0_START) as usize]),
       MTIMECMP0_START..=MTIMECMP0_END => Ok(self.mtimecmp0.to_le_bytes()[(address - MTIMECMP0_START) as usize]),
@@ -81,7 +81,7 @@ impl Device for Aclint {
         mtime[(address - MTIME_START) as usize] = data;
         self.mtime = u64::from_le_bytes(mtime);
       }
-      _ => return Err(Exception::LoadAccessFault(address))
+      _ => return Err(Exception::StoreAMOAccessFault(address))
       
     };
     Ok(())

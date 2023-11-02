@@ -129,6 +129,7 @@ impl Hart {
       | Trap::Exception(Exception::LoadAddressMisaligned(value))
       | Trap::Exception(Exception::LoadAccessFault(value))
       | Trap::Exception(Exception::StoreAMOAddressMisaligned(value))
+      | Trap::Exception(Exception::StoreAMOAccessFault(value))
       | Trap::Exception(Exception::InstructionPageFault(value))
       | Trap::Exception(Exception::LoadPageFault(value))
       | Trap::Exception(Exception::StoreAMOPageFault(value)) => value,

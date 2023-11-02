@@ -47,22 +47,22 @@ impl Memory {
 impl Device for Memory {
   fn step(&mut self, _bus: &mut Bus, _hart: &mut Hart) {}
 
-  fn read8(&self, address: u64) -> Result<u8, Exception> {
+  fn read8(&mut self, address: u64) -> Result<u8, Exception> {
     let address = address - MEMORY_START;
     Ok(unsafe { *(self.mem.wrapping_add(address as usize)) })
   }
 
-  fn read16(&self, address: u64) -> Result<u16, Exception> {
+  fn read16(&mut self, address: u64) -> Result<u16, Exception> {
     let address = address - MEMORY_START;
     Ok(u16::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) }))
   }
 
-  fn read32(&self, address: u64) -> Result<u32, Exception> {
+  fn read32(&mut self, address: u64) -> Result<u32, Exception> {
     let address = address - MEMORY_START;
     Ok(u32::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) }))
   }
 
-  fn read64(&self, address: u64) -> Result<u64, Exception> {
+  fn read64(&mut self, address: u64) -> Result<u64, Exception> {
     let address = address - MEMORY_START;
     Ok(u64::from_le(unsafe { *(self.mem.wrapping_add(address as usize) as *const _) }))
   }

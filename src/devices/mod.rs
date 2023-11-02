@@ -108,13 +108,13 @@ macro_rules! device_atomic {
 #[macro_export]
 macro_rules! device_rw {
   () => {
-    fn read16(&self, address: u64) -> Result<u16, crate::devices::Exception> {
+    fn read16(&mut self, address: u64) -> Result<u16, crate::devices::Exception> {
       Ok(u16::from_le_bytes([
         self.read8(address)?,
         self.read8(address.wrapping_add(1))?,
       ]))
     }
-    fn read32(&self, address: u64) -> Result<u32, crate::devices::Exception> {
+    fn read32(&mut self, address: u64) -> Result<u32, crate::devices::Exception> {
       Ok(u32::from_le_bytes([
         self.read8(address)?,
         self.read8(address.wrapping_add(1))?,
@@ -122,7 +122,7 @@ macro_rules! device_rw {
         self.read8(address.wrapping_add(3))?,
       ]))
     }
-    fn read64(&self, address: u64) -> Result<u64, crate::devices::Exception> {
+    fn read64(&mut self, address: u64) -> Result<u64, crate::devices::Exception> {
       Ok(u64::from_le_bytes([
         self.read8(address)?,
         self.read8(address.wrapping_add(1))?,
@@ -165,10 +165,10 @@ macro_rules! device_rw {
 
 pub(crate) trait Device {
   fn step(&mut self, bus: &mut Bus, hart: &mut Hart);
-  fn read8(&self, address: u64) -> Result<u8, Exception>;
-  fn read16(&self, address: u64) -> Result<u16, Exception>;
-  fn read32(&self, address: u64) -> Result<u32, Exception>;
-  fn read64(&self, address: u64) -> Result<u64, Exception>;
+  fn read8(&mut self, address: u64) -> Result<u8, Exception>;
+  fn read16(&mut self, address: u64) -> Result<u16, Exception>;
+  fn read32(&mut self, address: u64) -> Result<u32, Exception>;
+  fn read64(&mut self, address: u64) -> Result<u64, Exception>;
   fn write8(&mut self, address: u64, data: u8) -> Result<(), Exception>;
   fn write16(&mut self, address: u64, data: u16) -> Result<(), Exception>;
   fn write32(&mut self, address: u64, data: u32) -> Result<(), Exception>;

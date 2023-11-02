@@ -306,6 +306,14 @@ impl CsrRegistry {
     self.csr[MTVAL as usize] = data;
   }
 
+  pub(crate) fn write_mip_meip(&mut self, bit: u64) {
+    self.csr[MIP as usize] = self.csr[MIP as usize] & !(1 << 11) | ((bit & 0b1) << 3);
+  }
+
+  pub(crate) fn write_mip_seip(&mut self, bit: u64) {
+    self.csr[MIP as usize] = self.csr[MIP as usize] & !(1 << 9) | ((bit & 0b1) << 3);
+  }
+
   pub(crate) fn write_mip_mtip(&mut self, bit: u64) {
     self.csr[MIP as usize] = self.csr[MIP as usize] & !(1 << 7) | ((bit & 0b1) << 7);
   }
