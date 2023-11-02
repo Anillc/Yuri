@@ -97,14 +97,17 @@ impl Device for Plic {
   device_atomic!();
 
   fn step(&mut self, _bus: &mut Bus, hart: &mut Hart) {
-    for context in 0..CONTEXT_LENGTH {
-      let ip = if self.highest_irq(context) != 0 { 1 } else { 0 };
-      if context % 2 == 0 {
-        // M-mode
-        hart.csr.write_mip_meip(ip);
-      } else {
-        // S-mode
-        hart.csr.write_mip_seip(ip);
+    if self.update {
+      self.update = false;
+      for context in 0..CONTEXT_LENGTH {
+        let ip = if self.highest_irq(context) != 0 { 1 } else { 0 };
+        if context % 2 == 0 {
+          // M-mode
+          hart.csr.write_mip_meip(ip);
+        } else {
+          // S-mode
+          hart.csr.write_mip_seip(ip);
+        }
       }
     }
   }

@@ -117,7 +117,12 @@ impl MMU {
     let satp = SATP::from_u64(hart.csr.read_satp());
     if satp.mode != 8 { return Ok(address); }
     let (mprv, mpp, sum, mxr) = hart.csr.read_mstatus_mprv_mpp_sum_mxr();
-    let effective_mode = if mprv { mpp } else { hart.mode };
+    // MPRV only affects load and store
+    let effective_mode = if mprv && access != AccessType::Execute {
+      mpp
+    } else {
+      hart.mode
+    };
     if effective_mode == Mode::Machine { return Ok(address); }
 
     #[inline]
