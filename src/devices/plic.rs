@@ -54,10 +54,10 @@ impl Plic {
     }
   }
 
-  pub(crate) fn irq(&mut self, irq: u32) {
+  pub(crate) fn irq(&mut self, irq: u32, enable: bool) {
     let index = (irq / 32) as usize;
     let offset = irq % 32;
-    self.pending[index] |= 1 << offset;
+    self.pending[index] |= if enable { 1 } else { 0 } << offset;
     self.update = true;
   }
 

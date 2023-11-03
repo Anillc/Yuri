@@ -1,23 +1,26 @@
 use std::sync::{atomic::Ordering, Arc, Mutex};
 
-use crate::{trap::Exception, hart::Hart};
+use crate::{trap::Exception, hart::Hart, utils::channel::{Sender, Receiver}};
 
-use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}, plic::{Plic, PLIC_START, PLIC_END}};
+use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}, plic::{Plic, PLIC_START, PLIC_END}, uart::{UART_START, UART_END, Uart}};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Bus {
   pub(crate) memory: Memory,
   pub(crate) aclint: Arc<Mutex<Aclint>>,
   pub(crate) plic: Arc<Mutex<Plic>>,
+  pub(crate) uart: Arc<Mutex<Uart>>,
 }
 
 impl Bus {
-  pub(crate) fn new() -> Bus {
-    Bus {
+  pub(crate) fn new() -> (Bus, Sender<u8>, Receiver<u8>) {
+    let (uart, sender, receiver) = Uart::new();
+    (Bus {
       memory: Memory::new(),
       aclint: Arc::new(Mutex::new(Aclint::new())),
       plic: Arc::new(Mutex::new(Plic::new())),
-    }
+      uart: Arc::new(Mutex::new(uart)),
+    }, sender, receiver)
   }
   #[inline]
   fn device_read<T, F>(&mut self, address: u64, run: F) -> Result<T, Exception>
@@ -28,6 +31,7 @@ impl Bus {
       MEMORY_START..=MEMORY_END => Ok(run(&mut self.memory)?),
       ACLINT_START..=ACLINT_END => Ok(run(&mut *self.aclint.lock().unwrap())?),
       PLIC_START..=PLIC_END => Ok(run(&mut *self.plic.lock().unwrap())?),
+      UART_START..=UART_END => Ok(run(&mut *self.uart.lock().unwrap())?),
       _ => Err(Exception::LoadAccessFault(address))
     }
   }
@@ -40,6 +44,7 @@ impl Bus {
       MEMORY_START..=MEMORY_END => Ok(run(&mut self.memory)?),
       ACLINT_START..=ACLINT_END => Ok(run(&mut *self.aclint.lock().unwrap())?),
       PLIC_START..=PLIC_END => Ok(run(&mut *self.plic.lock().unwrap())?),
+      UART_START..=UART_END => Ok(run(&mut *self.uart.lock().unwrap())?),
       _ => Err(Exception::StoreAMOAccessFault(address))
     }
   }
@@ -48,6 +53,7 @@ impl Bus {
 impl Device for Bus {
   fn step(&mut self, bus: &mut Bus, hart: &mut Hart) {
     self.memory.step(bus, hart);
+    self.uart.lock().unwrap().step(bus, hart);
     self.aclint.lock().unwrap().step(bus, hart);
     self.plic.lock().unwrap().step(bus, hart);
   }

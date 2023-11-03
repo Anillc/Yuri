@@ -2,7 +2,7 @@ use std::fs;
 
 use elf::{ElfBytes, endian::LittleEndian};
 
-use crate::{hart::Hart, devices::{bus::Bus, Device}, mmu::MMU};
+use crate::{hart::Hart, devices::{bus::Bus, Device}, mmu::MMU, utils::channel::{Sender, Receiver}};
 
 pub(crate) struct Cpu {
   pub(crate) bus: Bus,
@@ -13,15 +13,15 @@ pub(crate) struct Cpu {
 }
 
 impl Cpu {
-  pub(crate) fn new() -> Cpu {
-    let bus = Bus::new();
+  pub(crate) fn new() -> (Cpu, Sender<u8>, Receiver<u8>) {
+    let (bus, sender, receiver) = Bus::new();
     let mmu = MMU::new(bus.clone());
-    Cpu {
+    (Cpu {
       mmu,
       bus: bus.clone(),
       hart: Hart::new(),
       tohost: 0,
-    }
+    }, sender, receiver)
   }
 
   pub(crate) fn run(&mut self) {

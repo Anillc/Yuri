@@ -7,6 +7,7 @@ use self::bus::Bus;
 pub(crate) mod memory;
 pub(crate) mod aclint;
 pub(crate) mod plic;
+pub(crate) mod uart;
 pub(crate) mod bus;
 
 #[macro_export]

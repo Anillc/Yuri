@@ -14,16 +14,8 @@ mod utils;
 mod trap;
 mod devices;
 
-fn run_program(path: &str) {
-  let mut cpu = Cpu::new();
-  cpu.load_elf_test(path);
-  cpu.run();
-}
-
 fn main() {
-  let dir = fs::read_dir("../riscv-tests/run").unwrap();
-  for file in dir {
-    let file = file.unwrap();
-    run_program(file.path().to_str().unwrap());
-  }
+  let (mut cpu, sender, receiver) = Cpu::new();
+  // cpu.load_elf_test(path);
+  // cpu.run();
 }

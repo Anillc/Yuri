@@ -2,6 +2,8 @@ use softfloat_wrapper::{RoundingMode, Float, F32, ExceptionFlags};
 
 use crate::{hart::Hart, csrs::CsrRegistry, trap::Exception};
 
+pub(crate) mod channel;
+
 pub(crate) fn extend_sign(origin: u64, length: usize) -> i64 {
   let pos = origin & (1 << (length - 1)) == 0;
   if pos {
