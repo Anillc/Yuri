@@ -128,9 +128,9 @@ impl Device for Uart {
           self.dll
         } else if self.lsr & UART_LSR_BI != 0 {
           0
-        } else if let Some(data) = self.receiver.recv() {
+        } else if self.receiver.avaliable() {
           self.lsr &= !UART_LSR_OE;
-          data
+          self.receiver.recv()
         } else {
           0
         };

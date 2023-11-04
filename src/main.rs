@@ -1,7 +1,5 @@
 #![feature(atomic_from_ptr)]
 #![feature(try_blocks)]
-use std::fs;
-
 use cpu::Cpu;
 
 mod cpu;
@@ -15,7 +13,13 @@ mod trap;
 mod devices;
 
 fn main() {
-  let (mut cpu, sender, receiver) = Cpu::new();
-  // cpu.load_elf_test(path);
-  // cpu.run();
+  let (mut cpu, controller) = Cpu::new();
+  std::thread::spawn(move || {
+    loop {
+      let r = controller.uart_receiver.recv();
+      print!("{}", char::from(r));
+    }
+  });
+  cpu.load_elf("/home/anillc/fw_payload.elf");
+  cpu.run();
 }

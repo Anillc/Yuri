@@ -63,15 +63,19 @@ impl Hart {
     let inst = mmu.fetch(self, self.pc)?;
     let parsed: Option<(&Instructor, u32, InstructionLen)> = try {
       let (inst, len) = match inst {
-        InstructionWithType::L32(inst) =>
-          (inst, 4),
-        InstructionWithType::L16(inst) =>
-          (decompress(inst)?, 2),
+        InstructionWithType::L32(inst) => {
+          // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
+          (inst, 4)
+        },
+        InstructionWithType::L16(inst) => {
+          // println!("{:x} {:?}: {:x}", self.pc, self.mode, inst);
+          (decompress(inst)?, 2)
+        },
       };
       (parse(inst)?, inst, len)
     };
     let (instructor, inst, len) = parsed
-      .ok_or_else(|| Exception::IllegalInstruction)?;
+      .ok_or(Exception::IllegalInstruction)?;
     (instructor.run)(inst, len, mmu, self)?;
     Ok(len)
   }

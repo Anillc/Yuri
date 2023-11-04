@@ -12,15 +12,24 @@ pub(crate) struct Bus {
   pub(crate) uart: Arc<Mutex<Uart>>,
 }
 
+#[derive(Debug)]
+pub(crate) struct DeviceController {
+  pub(crate) uart_sender: Sender<u8>,
+  pub(crate) uart_receiver: Receiver<u8>,
+}
+
 impl Bus {
-  pub(crate) fn new() -> (Bus, Sender<u8>, Receiver<u8>) {
+  pub(crate) fn new() -> (Bus, DeviceController) {
     let (uart, sender, receiver) = Uart::new();
     (Bus {
       memory: Memory::new(),
       aclint: Arc::new(Mutex::new(Aclint::new())),
       plic: Arc::new(Mutex::new(Plic::new())),
       uart: Arc::new(Mutex::new(uart)),
-    }, sender, receiver)
+    }, DeviceController {
+      uart_sender: sender,
+      uart_receiver: receiver,
+    })
   }
   #[inline]
   fn device_read<T, F>(&mut self, address: u64, run: F) -> Result<T, Exception>
@@ -52,6 +61,7 @@ impl Bus {
 
 impl Device for Bus {
   fn step(&mut self, bus: &mut Bus, hart: &mut Hart) {
+    // TODO: move devices (except plic) to other threads
     self.memory.step(bus, hart);
     self.uart.lock().unwrap().step(bus, hart);
     self.aclint.lock().unwrap().step(bus, hart);

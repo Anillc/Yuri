@@ -4,7 +4,7 @@ use crate::{trap::Exception, hart::Hart};
 
 use super::{Device, bus::Bus};
 
-pub(crate) const MEMORY_SIZE: usize = 1024 * 1024;
+pub(crate) const MEMORY_SIZE: usize = 1024 * 1024 * 1024;
 pub(crate) const MEMORY_START: u64 = 0x80000000;
 pub(crate) const MEMORY_END: u64 = MEMORY_START + MEMORY_SIZE as u64 - 1;
 
