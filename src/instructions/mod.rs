@@ -16,6 +16,7 @@ pub(crate) enum InstructionWithType {
   L32(u32), L16(u16),
 }
 
+#[allow(clippy::type_complexity)]
 //                               opcode, (mask, comp, instructor)
 static INSTRUCTORS: Lazy<HashMap<u8, Vec<(u32, u32, Instructor)>>> = Lazy::new(|| {
   let mut res: HashMap<u8, Vec<(u32, u32, Instructor)>> = HashMap::new();

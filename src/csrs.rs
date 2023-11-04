@@ -49,6 +49,7 @@ pub(crate) struct CsrRegistry {
   pub(crate) csr: [u64; 4096],
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug)]
 pub(crate) struct MIEP {
   pub(crate) ss: bool,

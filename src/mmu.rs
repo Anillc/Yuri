@@ -6,6 +6,7 @@ const PAGESIZE: u64 = 4096;
 const LEVELS: usize = 3;
 const PTESIZE: u64 = 8;
 
+#[allow(clippy::upper_case_acronyms)]
 struct SATP {
   mode: u64,
   ppn: u64,
@@ -42,6 +43,7 @@ impl VirtualAddress {
   }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 struct PTE {
   invalid: bool,
   ppn: u64,
@@ -86,6 +88,7 @@ enum AccessType {
   Execute, Read, Write, ReadWrite,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone)]
 pub(crate) struct MMU {
   bus: Bus,
@@ -197,6 +200,7 @@ impl MMU {
     let high_len = (address % LEN as u64) as usize;
     let low_len = LEN - high_len;
     let mut bytes: [u8; LEN] = [0; LEN];
+    #[allow(clippy::needless_range_loop)]
     for i in 0..LEN {
       if i < low_len {
         bytes[i] = self.bus.read8(address_low + i as u64)?;
@@ -213,6 +217,7 @@ impl MMU {
     let address_high = self.translate(address + LEN as u64, hart, AccessType::Read)?;
     let high_len = (address % LEN as u64) as usize;
     let low_len = LEN - high_len;
+    #[allow(clippy::needless_range_loop)]
     for i in 0..LEN {
       if i < low_len {
         self.bus.write8(address_low + i as u64, data[i])?;
@@ -234,18 +239,18 @@ impl MMU {
     if address % 4 == 0 {
       let instruction_high = self.bus.read16(address_low + 2)
         .map_err(|_| Exception::InstructionAccessFault(address))? as u32;
-      return Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32));
+      Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32))
     } else {
       let address_high = self.translate(address + 2, hart, AccessType::Execute)?;
       let instruction_high = self.bus.read16(address_high)
         .map_err(|_| Exception::InstructionAccessFault(address))? as u32;
-      return Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32));
+      Ok(InstructionWithType::L32(instruction_high << 16 | instruction_low as u32))
     }
   }
 
   pub(crate) fn read8(&mut self, hart: &Hart, address: u64) -> Result<u8, Exception> {
     let address = self.translate(address, hart, AccessType::Read)?;
-    Ok(self.bus.read8(address)?)
+    self.bus.read8(address)
   }
   pub(crate) fn read16(&mut self, hart: &Hart, address: u64) -> Result<u16, Exception> {
     if address % 2 == 0 {
@@ -306,91 +311,91 @@ impl MMU {
   pub(crate) fn atomic_swap32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_swap32(address, val, ordering)?)
+    self.bus.atomic_swap32(address, val, ordering)
   }
   pub(crate) fn atomic_swap64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_swap64(address, val, ordering)?)
+    self.bus.atomic_swap64(address, val, ordering)
   }
   pub(crate) fn atomic_add32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_add32(address, val, ordering)?)
+    self.bus.atomic_add32(address, val, ordering)
   }
   pub(crate) fn atomic_add64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_add64(address, val, ordering)?)
+    self.bus.atomic_add64(address, val, ordering)
   }
   pub(crate) fn atomic_xor32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_xor32(address, val, ordering)?)
+    self.bus.atomic_xor32(address, val, ordering)
   }
   pub(crate) fn atomic_xor64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_xor64(address, val, ordering)?)
+    self.bus.atomic_xor64(address, val, ordering)
   }
   pub(crate) fn atomic_and32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_and32(address, val, ordering)?)
+    self.bus.atomic_and32(address, val, ordering)
   }
   pub(crate) fn atomic_and64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_and64(address, val, ordering)?)
+    self.bus.atomic_and64(address, val, ordering)
   }
   pub(crate) fn atomic_or32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_or32(address, val, ordering)?)
+    self.bus.atomic_or32(address, val, ordering)
   }
   pub(crate) fn atomic_or64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_or64(address, val, ordering)?)
+    self.bus.atomic_or64(address, val, ordering)
   }
   pub(crate) fn atomic_min_i32(&mut self, hart: &Hart, address: u64, val: i32, ordering: Ordering) -> Result<i32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_min_i32(address, val, ordering)?)
+    self.bus.atomic_min_i32(address, val, ordering)
   }
   pub(crate) fn atomic_min_i64(&mut self, hart: &Hart, address: u64, val: i64, ordering: Ordering) -> Result<i64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_min_i64(address, val, ordering)?)
+    self.bus.atomic_min_i64(address, val, ordering)
   }
   pub(crate) fn atomic_max_i32(&mut self, hart: &Hart, address: u64, val: i32, ordering: Ordering) -> Result<i32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_max_i32(address, val, ordering)?)
+    self.bus.atomic_max_i32(address, val, ordering)
   }
   pub(crate) fn atomic_max_i64(&mut self, hart: &Hart, address: u64, val: i64, ordering: Ordering) -> Result<i64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_max_i64(address, val, ordering)?)
+    self.bus.atomic_max_i64(address, val, ordering)
   }
   pub(crate) fn atomic_min_u32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_min_u32(address, val, ordering)?)
+    self.bus.atomic_min_u32(address, val, ordering)
   }
   pub(crate) fn atomic_min_u64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_min_u64(address, val, ordering)?)
+    self.bus.atomic_min_u64(address, val, ordering)
   }
   pub(crate) fn atomic_max_u32(&mut self, hart: &Hart, address: u64, val: u32, ordering: Ordering) -> Result<u32, Exception> {
     if address % 4 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_max_u32(address, val, ordering)?)
+    self.bus.atomic_max_u32(address, val, ordering)
   }
   pub(crate) fn atomic_max_u64(&mut self, hart: &Hart, address: u64, val: u64, ordering: Ordering) -> Result<u64, Exception> {
     if address % 8 != 0 { return Err(Exception::StoreAMOAddressMisaligned(address)); }
     let address = self.translate(address, hart, AccessType::ReadWrite)?;
-    Ok(self.bus.atomic_max_u64(address, val, ordering)?)
+    self.bus.atomic_max_u64(address, val, ordering)
   }
 }

@@ -46,6 +46,7 @@ pub(crate) struct J {
 }
 
 // R-type for A extension
+#[allow(clippy::upper_case_acronyms)]
 pub(crate) struct RA {
   pub(crate) aq: bool,
   pub(crate) rl: bool,
@@ -55,6 +56,7 @@ pub(crate) struct RA {
 }
 
 // Float Point
+#[allow(clippy::upper_case_acronyms)]
 pub(crate) struct RFP {
   pub(crate) rs2: usize,
   pub(crate) rs1: usize,
@@ -62,6 +64,7 @@ pub(crate) struct RFP {
   pub(crate) rd: usize,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 pub(crate) struct RFPRS3 {
   pub(crate) rs3: usize,
   pub(crate) rs2: usize,

@@ -72,6 +72,7 @@ impl Uart {
       ier: 0,
       iir: UART_IIR_NO_INT,
       mcr: UART_MCR_OUT2,
+      #[allow(clippy::eq_op)]
       lsr: UART_LSR_TEMT | UART_LSR_TEMT,
       scr: 0,
       fcr: 0,

@@ -458,6 +458,7 @@ fn instructors() -> Vec<CInstructor> {
             Some(rs2 | rd | 0b0110011)
           }
         } else {
+          #[allow(clippy::collapsible_else_if)]
           if rs1 == 0 && rs2 == 0 {
             // C.EBREAK
             Some(0b00000000000100000000000001110011)
