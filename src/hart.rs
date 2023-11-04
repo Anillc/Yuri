@@ -130,6 +130,7 @@ impl Hart {
     let trap_value = match trap {
         Trap::Exception(Exception::InstructionAccessFault(value))
       | Trap::Exception(Exception::Breakpoint(value))
+      | Trap::Exception(Exception::LoadAddressMisaligned(value))
       | Trap::Exception(Exception::LoadAccessFault(value))
       | Trap::Exception(Exception::StoreAMOAddressMisaligned(value))
       | Trap::Exception(Exception::StoreAMOAccessFault(value))
