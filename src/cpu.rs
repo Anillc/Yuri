@@ -88,8 +88,7 @@ mod tests {
             println!("'{}' passed", filepath);
             break;
           } else {
-            println!("terminated by {:x}", fromvm);
-            break;
+            panic!("'{}' terminated with code {:x}", filepath, fromvm);
           }
         }
       }

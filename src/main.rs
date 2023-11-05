@@ -20,6 +20,6 @@ fn main() {
       print!("{}", char::from(r));
     }
   });
-  cpu.load_elf("/home/anillc/fw_payload.elf");
+  cpu.load_elf("fw_payload.elf");
   cpu.run();
 }
