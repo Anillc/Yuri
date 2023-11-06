@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use elf::{ElfBytes, endian::LittleEndian};
 
@@ -29,7 +29,7 @@ impl Cpu {
     }
   }
 
-  pub(crate) fn load_elf(&mut self, file: &str) {
+  pub(crate) fn load_elf(&mut self, file: PathBuf) {
     let file = fs::read(file).unwrap();
     let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
     for segment in elf.segments().unwrap() {

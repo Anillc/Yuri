@@ -1,5 +1,8 @@
 #![feature(atomic_from_ptr)]
 #![feature(try_blocks)]
+use std::{path::PathBuf, thread::spawn, io::{stdin, Read}};
+
+use clap::{Parser, ValueEnum};
 use cpu::Cpu;
 
 mod cpu;
@@ -12,14 +15,32 @@ mod utils;
 mod trap;
 mod devices;
 
+#[derive(Debug, Parser)]
+struct Args {
+  #[arg(long, default_value = "false")]
+  htif: bool,
+  file: PathBuf,
+}
+
 fn main() {
+  let Args { htif, file } = Args::parse();
   let (mut cpu, controller) = Cpu::new();
-  std::thread::spawn(move || {
-    loop {
-      let r = controller.uart_receiver.recv();
-      print!("{}", char::from(r));
-    }
+  let uart_sender = controller.uart_sender.clone();
+  spawn(move || loop {
+    print!("{}", char::from_u32(controller.uart_receiver.recv() as u32).unwrap());
   });
-  cpu.load_elf("fw_payload.elf");
-  cpu.run();
+  spawn(move || {
+    for input in std::io::stdin().bytes() {
+      let input = input.unwrap();
+      uart_sender.send(input);
+      if htif { todo!() }
+    }
+    if htif { todo!() }
+  });
+  if !htif {
+    cpu.load_elf(file);
+    cpu.run();
+  } else {
+    todo!();
+  }
 }
