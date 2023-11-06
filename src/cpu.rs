@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use elf::{ElfBytes, endian::LittleEndian};
 
-use crate::{hart::Hart, devices::{bus::{Bus, DeviceController}, Device}, mmu::MMU};
+use crate::{hart::Hart, devices::{bus::{Bus, DeviceController}, Device}, mmu::MMU, utils::channel::Receiver};
 
 pub(crate) struct Cpu {
   pub(crate) bus: Bus,
@@ -21,15 +21,7 @@ impl Cpu {
     }, controller)
   }
 
-  pub(crate) fn run(&mut self) {
-    let mut bus = self.bus.clone();
-    loop {
-      self.hart.step(&mut self.mmu);
-      self.bus.step(&mut bus, &mut self.hart);
-    }
-  }
-
-  pub(crate) fn load_elf(&mut self, file: PathBuf) {
+  pub(crate) fn run_elf(&mut self, file: PathBuf) {
     let file = fs::read(file).unwrap();
     let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
     for segment in elf.segments().unwrap() {
@@ -39,6 +31,51 @@ impl Cpu {
       }
     }
     self.hart.pc = elf.ehdr.e_entry;
+
+    let mut bus = self.bus.clone();
+    loop {
+      self.hart.step(&mut self.mmu);
+      self.bus.step(&mut bus, &mut self.hart);
+    }
+  }
+
+  pub(crate) fn run_htif(&mut self, filepath: PathBuf, stdin: Receiver<i32>) {
+    let file = fs::read(filepath).unwrap();
+    let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
+    for segment in elf.segments().unwrap() {
+      for i in 0..segment.p_filesz {
+        if segment.p_type != elf::abi::PT_LOAD { continue; }
+        self.bus.write8(segment.p_paddr + i, file[(segment.p_offset + i) as usize]).unwrap();
+      }
+    }
+    self.hart.pc = elf.ehdr.e_entry;
+    let (parsing_table, string_table) = elf.symbol_table().unwrap().unwrap();
+    let fromhost = parsing_table.iter().find(|symbol|
+      string_table.get(symbol.st_name as usize).unwrap() == "fromhost")
+      .unwrap().st_value;
+    let tohost = parsing_table.iter().find(|symbol|
+      string_table.get(symbol.st_name as usize).unwrap() == "tohost")
+      .unwrap().st_value;
+
+    let mut bus = self.bus.clone();
+    loop {
+      self.hart.step(&mut self.mmu);
+      self.bus.step(&mut bus, &mut self.hart);
+      let tovm = self.bus.read64(fromhost).unwrap();
+      if tovm != 0 { continue; }
+      let fromvm = self.bus.read64(tohost).unwrap();
+      if fromvm != 0 {
+        self.bus.write64(tohost, 0).unwrap();
+        let dev = fromvm >> 56;
+        let cmd = fromvm << 8 >> 56;
+        let data = fromvm << 16 >> 16;
+        match dev {
+          1 if cmd == 0 => self.bus.write64(fromhost, (1 << 56) | (stdin.recv() as u64)).unwrap(),
+          1 if cmd == 1 => print!("{}", char::from_u32(data as u32).unwrap()),
+          _ => panic!("terminated with code {:x}", fromvm),
+        };
+      }
+    }
   }
 }
 
