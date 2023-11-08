@@ -61,7 +61,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let divisor = hart.regs[rs2] as i64;
         let res = if divisor == 0 {
           u64::MAX
-        } else if dividend == i64::MIN || divisor == -1 {
+        } else if dividend == i64::MIN && divisor == -1 {
           dividend as u64
         } else {
           dividend.wrapping_div(divisor) as u64
@@ -99,7 +99,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let divisor = hart.regs[rs2] as i64;
         let res = if divisor == 0 {
           dividend as u64
-        } else if dividend == i64::MIN || divisor == -1 {
+        } else if dividend == i64::MIN && divisor == -1 {
           0
         } else {
           dividend.wrapping_rem(divisor) as u64
@@ -148,7 +148,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let divisor = hart.regs[rs2] as i32;
         let res = if divisor == 0 {
           u64::MAX
-        } else if dividend == i32::MIN || divisor == -1 {
+        } else if dividend == i32::MIN && divisor == -1 {
           dividend as u64
         } else {
           dividend.wrapping_div(divisor) as i64 as u64
@@ -186,7 +186,7 @@ pub(crate) fn m() -> Vec<Instructor> {
         let divisor = hart.regs[rs2] as i32;
         let res = if divisor == 0 {
           dividend as u64
-        } else if dividend == i32::MIN || divisor == -1 {
+        } else if dividend == i32::MIN && divisor == -1 {
           0
         } else {
           dividend.wrapping_rem(divisor) as i64 as u64
