@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use elf::{ElfBytes, endian::LittleEndian};
 
-use crate::{hart::Hart, devices::{bus::{Bus, DeviceController}, Device}, mmu::MMU, utils::channel::Receiver};
+use crate::{hart::Hart, devices::{bus::{Bus, DeviceController}, Device}, mmu::MMU, utils::channel::{Receiver, Sender}};
 
 pub(crate) struct Cpu {
   pub(crate) bus: Bus,
@@ -39,7 +39,7 @@ impl Cpu {
     }
   }
 
-  pub(crate) fn run_htif(&mut self, file: PathBuf, stdin: Receiver<i32>) {
+  pub(crate) fn run_htif(&mut self, file: PathBuf, stdin: Receiver<i32>, stdout: Sender<i32>) {
     let file = fs::read(file).unwrap();
     let elf = ElfBytes::<LittleEndian>::minimal_parse(&file).unwrap();
     for segment in elf.segments().unwrap() {
@@ -72,7 +72,7 @@ impl Cpu {
         match dev {
           0 if cmd == 0 && data == 1 => break,
           1 if cmd == 0 => self.bus.write64(fromhost, (1 << 56) | (stdin.recv() as u64)).unwrap(),
-          1 if cmd == 1 => print!("{}", char::from_u32(data as u32).unwrap()),
+          1 if cmd == 1 => stdout.send(data as i32),
           _ => panic!("terminated with code {:x}", fromvm),
         };
       }
@@ -91,9 +91,10 @@ mod tests {
     let dir = fs::read_dir("tests").unwrap();
     for file in dir {
       let (_, htif_receiver) = channel::<i32>();
+      let (htif_sender, _) = channel::<i32>();
       let file = file.unwrap().path();
       let (mut cpu, _) = Cpu::new();
-      cpu.run_htif(file.clone(), htif_receiver);
+      cpu.run_htif(file.clone(), htif_receiver, htif_sender);
       println!("'{}' passed", file.to_str().unwrap());
     }
   }
