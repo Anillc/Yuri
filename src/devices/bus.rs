@@ -2,7 +2,7 @@ use std::sync::{atomic::Ordering, Arc, Mutex};
 
 use crate::{trap::Exception, hart::Hart, utils::channel::{Sender, Receiver}};
 
-use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}, plic::{Plic, PLIC_START, PLIC_END}, uart::{UART_START, UART_END, Uart}};
+use super::{Device, memory::{Memory, MEMORY_START, MEMORY_END}, aclint::{Aclint, ACLINT_START, ACLINT_END}, plic::{Plic, PLIC_START, PLIC_END}, uart::{UART_START, UART_END, Uart}, ysyx::{Ysyx, YSYX_START, YSYX_END}};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Bus {
@@ -10,6 +10,7 @@ pub(crate) struct Bus {
   pub(crate) aclint: Arc<Mutex<Aclint>>,
   pub(crate) plic: Arc<Mutex<Plic>>,
   pub(crate) uart: Arc<Mutex<Uart>>,
+  pub(crate) ysyx: Arc<Mutex<Ysyx>>,
 }
 
 #[derive(Debug)]
@@ -26,6 +27,7 @@ impl Bus {
       aclint: Arc::new(Mutex::new(Aclint::new())),
       plic: Arc::new(Mutex::new(Plic::new())),
       uart: Arc::new(Mutex::new(uart)),
+      ysyx: Arc::new(Mutex::new(Ysyx::new())),
     }, DeviceController {
       uart_sender: sender,
       uart_receiver: receiver,
@@ -41,6 +43,7 @@ impl Bus {
       ACLINT_START..=ACLINT_END => Ok(run(&mut *self.aclint.lock().unwrap())?),
       PLIC_START..=PLIC_END => Ok(run(&mut *self.plic.lock().unwrap())?),
       UART_START..=UART_END => Ok(run(&mut *self.uart.lock().unwrap())?),
+      YSYX_START..=YSYX_END => Ok(run(&mut *self.ysyx.lock().unwrap())?),
       _ => Err(Exception::LoadAccessFault(address))
     }
   }
@@ -54,6 +57,7 @@ impl Bus {
       ACLINT_START..=ACLINT_END => Ok(run(&mut *self.aclint.lock().unwrap())?),
       PLIC_START..=PLIC_END => Ok(run(&mut *self.plic.lock().unwrap())?),
       UART_START..=UART_END => Ok(run(&mut *self.uart.lock().unwrap())?),
+      YSYX_START..=YSYX_END => Ok(run(&mut *self.ysyx.lock().unwrap())?),
       _ => Err(Exception::StoreAMOAccessFault(address))
     }
   }
@@ -64,6 +68,7 @@ impl Device for Bus {
     // TODO: move devices (except plic) to other threads
     self.memory.step(bus, hart);
     self.uart.lock().unwrap().step(bus, hart);
+    self.ysyx.lock().unwrap().step(bus, hart);
     self.aclint.lock().unwrap().step(bus, hart);
     self.plic.lock().unwrap().step(bus, hart);
   }

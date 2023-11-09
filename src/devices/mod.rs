@@ -8,6 +8,7 @@ pub(crate) mod memory;
 pub(crate) mod aclint;
 pub(crate) mod plic;
 pub(crate) mod uart;
+pub(crate) mod ysyx;
 pub(crate) mod bus;
 
 #[macro_export]
