@@ -70,8 +70,15 @@ impl Plic {
   pub(crate) fn irq(&mut self, irq: u32, enable: bool) {
     let index = (irq / 32) as usize;
     let offset = irq % 32;
-    self.pending[index] |= if enable { 1 } else { 0 } << offset;
-    self.update = true;
+    let pending = self.pending[index];
+    if enable {
+      self.pending[index] |= 1 << offset;
+    } else {
+      self.pending[index] &= !(1 << offset);
+    }
+    if pending != self.pending[index] {
+      self.update = true;
+    }
   }
 
   fn complete(&mut self, context: usize, irq: u32) {
