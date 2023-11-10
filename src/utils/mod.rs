@@ -109,3 +109,9 @@ pub(crate) fn check_and_set_fs(hart: &mut Hart, set_dirty: bool) -> Result<(), E
   }
   Ok(())
 }
+
+pub(crate) fn u32_to_u8(arr: &mut [u32]) -> &mut [u8] {
+  let len = 4 * arr.len();
+  let ptr = arr.as_ptr() as *mut u8;
+  unsafe { std::slice::from_raw_parts_mut(ptr, len) }
+}

@@ -9,7 +9,7 @@
     in {
       devShells.default = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [];
-        buildInputs = with pkgs; [];
+        buildInputs = with pkgs; [ SDL2 ];
       };
     });
 }
