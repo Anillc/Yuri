@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::array;
 
-use once_cell::sync::Lazy;
+use static_init::dynamic;
 
 use crate::utils::extend_sign;
 
@@ -11,17 +11,20 @@ pub(crate) struct CInstructor {
   pub(crate) decompress: fn(inst: u16) -> Option<u32>,
 }
 
+#[dynamic]
 //                               opcode and funct3
-static INSTRUCTORS: Lazy<HashMap<u16, CInstructor>> = Lazy::new(|| {
-  let mut res: HashMap<u16, CInstructor> = HashMap::new();
+static INSTRUCTORS: [Option<CInstructor>; 1024] = {
+  let mut res: [Option<CInstructor>; 1024] = array::from_fn(|_| None);
   for instructor in instructors() {
-    res.insert(((instructor.funct3 as u16) << 13) | (instructor.opcode as u16), instructor);
+    let funct3 = instructor.funct3 as usize;
+    let opcode = instructor.opcode as usize;
+    res[(funct3 << 7) | opcode] = Some(instructor);
   }
   res
-});
+};
 
 pub(crate) fn decompress(inst: u16) -> Option<u32> {
-  let instructor = INSTRUCTORS.get(&((inst & 0b1110000000000000) | (inst & 0b11)))?;
+  let instructor = INSTRUCTORS.get(((inst >> 6) & 0b1110000000 | (inst & 0b11)) as usize)?.as_ref()?;
   (instructor.decompress)(inst)
 }
 

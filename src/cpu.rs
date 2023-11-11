@@ -8,6 +8,7 @@ pub(crate) struct Cpu {
   pub(crate) bus: Bus,
   pub(crate) mmu: MMU,
   pub(crate) hart: Hart,
+  bus_step: u32,
 }
 
 impl Cpu {
@@ -18,6 +19,7 @@ impl Cpu {
       mmu,
       bus: bus.clone(),
       hart: Hart::new(),
+      bus_step: 0,
     }, controller)
   }
 
@@ -35,7 +37,12 @@ impl Cpu {
     let mut bus = self.bus.clone();
     loop {
       self.hart.step(&mut self.mmu);
-      self.bus.step(&mut bus, &mut self.hart);
+      if self.bus_step > 1000 || self.hart.wfi {
+        self.bus_step = 0;
+        self.bus.step(&mut bus, &mut self.hart);
+      } else {
+        self.bus_step += 1;
+      }
     }
   }
 
