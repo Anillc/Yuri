@@ -30,7 +30,6 @@ impl<T> Sender<T> {
   pub(crate) fn send(&self, t: T) {
     let mut buffer = self.channel.buffer.lock().unwrap();
     buffer.push_back(t);
-    drop(buffer);
     self.channel.condvar.notify_one();
   }
 }
