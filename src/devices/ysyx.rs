@@ -14,7 +14,8 @@ const VGA_HEIGHT: usize = 600;
 const KEYDOWN: u32 = 0x8000;
 
 
-const YSYX_TIME: u64 = YSYX_START;
+const YSYX_TIME_LOW: u64 = YSYX_START;
+const YSYX_TIME_HIGH: u64 = YSYX_START + 8;
 
 const YSYX_VGACTL_ADDR_LOW: u64 = YSYX_START + 0x100;
 // sync
@@ -102,7 +103,8 @@ impl Device for Ysyx {
 
   fn read64(&mut self, address: u64) -> Result<u64, Exception> {
     match address {
-      YSYX_TIME => Ok(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()),
+      YSYX_TIME_LOW => Ok(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64),
+      YSYX_TIME_HIGH => Ok((SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() >> 64) as u64),
       _ => Err(Exception::LoadAccessFault(address))
     }
   }
