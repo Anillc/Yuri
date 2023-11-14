@@ -47,7 +47,7 @@ impl Ysyx {
   pub(crate) fn new() -> Ysyx {
     let sdl_ctx = sdl2::init().unwrap();
     let video = sdl_ctx.video().unwrap();
-    let window = video.window("ysyx", VGA_WIDTH as u32, VGA_HEIGHT as u32)
+    let window = video.window("ysyx", 1024, 768)
       .position_centered()
       .opengl()
       .build().unwrap();
