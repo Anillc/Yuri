@@ -1,4 +1,3 @@
-#![feature(atomic_from_ptr)]
 #![feature(try_blocks)]
 use std::{path::PathBuf, thread::spawn, io::Read};
 
