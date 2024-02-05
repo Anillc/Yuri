@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
 elf = "0.7.2"
-sdl2 = "0.35.2"
+sdl2 = "0.36.0"
 static_init = "1.0.3"
 
 [dependencies.softfloat-wrapper]

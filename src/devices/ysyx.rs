@@ -123,7 +123,7 @@ impl Device for Ysyx {
         let surface = Surface::from_data_pixelmasks(
           u32_to_u8(&mut self.vmem),
           VGA_WIDTH as u32, VGA_HEIGHT as u32, VGA_WIDTH as u32 * 4,
-          PixelMasks {
+          &PixelMasks {
             bpp: 32,
             rmask: 0x00ff0000,
             gmask: 0x0000ff00,
